@@ -137,12 +137,12 @@ HOOK_C_API HOOK_DECL_EXPORT cudaError_t cudaPeekAtLastError() {
 
 HOOK_C_API HOOK_DECL_EXPORT const char *cudaGetErrorName(cudaError_t error) {
     HOOK_TRACE_PROFILE("cudaGetErrorName");
-    return cudaErrorInvalidValue;
+    return "cudaErrorInvalidValue";
 }
 
 HOOK_C_API HOOK_DECL_EXPORT const char *cudaGetErrorString(cudaError_t error) {
     HOOK_TRACE_PROFILE("cudaGetErrorString");
-    return cudaErrorInvalidValue;
+    return "cudaErrorInvalidValue";
 }
 
 HOOK_C_API HOOK_DECL_EXPORT cudaError_t cudaGetDeviceCount(int *count) {
@@ -1071,7 +1071,7 @@ HOOK_C_API HOOK_DECL_EXPORT cudaError_t cudaGetChannelDesc(struct cudaChannelFor
 HOOK_C_API HOOK_DECL_EXPORT struct cudaChannelFormatDesc cudaCreateChannelDesc(int x, int y, int z, int w,
                                                                                enum cudaChannelFormatKind f) {
     HOOK_TRACE_PROFILE("cudaCreateChannelDesc");
-    return cudaErrorInvalidValue;
+    return cudaChannelFormatDesc();
 }
 
 HOOK_C_API HOOK_DECL_EXPORT cudaError_t cudaCreateTextureObject(cudaTextureObject_t *pTexObject,
@@ -1694,31 +1694,31 @@ HOOK_C_API HOOK_DECL_EXPORT cudaError_t cudaStreamUpdateCaptureDependencies_ptsz
 
 HOOK_C_API HOOK_DECL_EXPORT void **__cudaRegisterFatBinary(void *fatCubin) {
     HOOK_TRACE_PROFILE("__cudaRegisterFatBinary");
-    return cudaErrorInvalidValue;
+    return NULL;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT void __cudaRegisterFatBinaryEnd(void **fatCubinHandle) {
     HOOK_TRACE_PROFILE("__cudaRegisterFatBinaryEnd");
-    return cudaErrorInvalidValue;
+    return NULL;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT void __cudaUnregisterFatBinary(void **fatCubinHandle) {
     HOOK_TRACE_PROFILE("__cudaUnregisterFatBinary");
-    return cudaErrorInvalidValue;
+    return NULL;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT void __cudaRegisterVar(void **fatCubinHandle, char *hostVar, char *deviceAddress,
                                                    const char *deviceName, int ext, size_t size, int constant,
                                                    int global) {
     HOOK_TRACE_PROFILE("__cudaRegisterVar");
-    return cudaErrorInvalidValue;
+    return NULL;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT void __cudaRegisterManagedVar(void **fatCubinHandle, void **hostVarPtrAddress,
                                                           char *deviceAddress, const char *deviceName, int ext,
                                                           size_t size, int constant, int global) {
     HOOK_TRACE_PROFILE("__cudaRegisterManagedVar");
-    return cudaErrorInvalidValue;
+    return NULL;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT char __cudaInitModule(void **fatCubinHandle) {
@@ -1730,21 +1730,21 @@ HOOK_C_API HOOK_DECL_EXPORT void __cudaRegisterTexture(void **fatCubinHandle, co
                                                        const void **deviceAddress, const char *deviceName, int dim,
                                                        int norm, int ext) {
     HOOK_TRACE_PROFILE("__cudaRegisterTexture");
-    return cudaErrorInvalidValue;
+    return NULL;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT void __cudaRegisterSurface(void **fatCubinHandle, const struct surfaceReference *hostVar,
                                                        const void **deviceAddress, const char *deviceName, int dim,
                                                        int ext) {
     HOOK_TRACE_PROFILE("__cudaRegisterSurface");
-    return cudaErrorInvalidValue;
+    return NULL;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT void __cudaRegisterFunction(void **fatCubinHandle, const char *hostFun, char *deviceFun,
                                                         const char *deviceName, int thread_limit, uint3 *tid,
                                                         uint3 *bid, dim3 *bDim, dim3 *gDim, int *wSize) {
     HOOK_TRACE_PROFILE("__cudaRegisterFunction");
-    return cudaErrorInvalidValue;
+    return NULL;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT cudaError_t __cudaPopCallConfiguration(dim3 *gridDim, dim3 *blockDim, size_t *sharedMem,

@@ -19,7 +19,7 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlShutdown() {
 
 HOOK_C_API HOOK_DECL_EXPORT const char *nvmlErrorString(nvmlReturn_t result) {
     HOOK_TRACE_PROFILE("nvmlErrorString");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    return "NVML_ERROR_INVALID_ARGUMENT";
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlSystemGetDriverVersion(char *version, unsigned int length) {
