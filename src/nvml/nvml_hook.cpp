@@ -1,6 +1,32 @@
+#include <yaml-cpp/yaml.h>
+
+#include <iostream>
+
+#include "common.h"
 #include "macro_common.h"
 #include "nvml_subset.h"
 #include "trace_profile.h"
+GPUList nvidia_gpus;
+char *node_name = NULL;
+// load configuration file
+__attribute__((constructor)) void init() {
+    // read the configuration file path from the environment variable
+    const char *config_path = std::getenv("FAKE_GPU_CONFIG");
+    node_name = std::getenv("NODE_NAME");
+    if (config_path == nullptr) {
+        std::cerr << "Environment variable FAKE_GPU_CONFIG is not set." << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    YAML::Node config = YAML::LoadFile(config_path);
+    // parse the configuration file
+    for (const auto &gpu_node : config["nvidia"]) {
+        GPU gpu;
+        gpu_node >> gpu;  // parse the GPU node
+        nvidia_gpus.push_back(gpu);
+        // print the GPU information
+        HLOG("GPU Name: %s, UUID: %s", gpu.name.c_str(), gpu.uuid.c_str());
+    }
+}
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlInit_v2() {
     HOOK_TRACE_PROFILE("nvmlInit_v2");
@@ -1506,7 +1532,7 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlInternalGetExportTable(const void *
     return NVML_ERROR_INVALID_ARGUMENT;
 }
 
-HOOK_C_API HOOK_DECL_EXPORT  nvmlReturn_t nvmlDeviceGetMemoryInfo_v2(nvmlDevice_t device, nvmlMemory_v2_t *memory) {
+HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetMemoryInfo_v2(nvmlDevice_t device, nvmlMemory_v2_t *memory) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetMemoryInfo_v2");
     return NVML_ERROR_INVALID_ARGUMENT;
 }

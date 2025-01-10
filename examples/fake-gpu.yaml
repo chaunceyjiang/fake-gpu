@@ -1,0 +1,37 @@
+nvidia:
+  - name: NVIDIA Tesla T4
+    uuid: GPU-12345678abc-nodename-1
+    driver_version: 440.33.01
+    ram: 16160
+    ram_unit: MiB
+    brand: Tesla
+    cuda_version: 10.2
+    cuda_cores: 2560
+    pci:
+      bus_id: 0000:00:1E.0
+      device_id: 1234
+      domain_id: 0
+      sub_system_id: 5678
+    nvlink:
+      version: 1.0
+      capacity: 1
+      bandwidth: 25
+      peer_gpu: GPU-12345678abc-nodename-2
+  - name: NVIDIA Tesla T4
+    uuid: GPU-12345678abc-nodename-2
+    driver_version: 440.33.01
+    ram: 16160
+    ram_unit: MiB
+    brand: Tesla
+    cuda_version: 10.2
+    cuda_cores: 2560
+    pci:
+      bus_id: 0000:00:1E.1
+      device_id: 1234
+      domain_id: 0
+      sub_system_id: 5678
+    nvlink:
+      version: 1.0
+      capacity: 1
+      bandwidth: 25
+      peer_gpu: GPU-12345678abc-nodename-1
