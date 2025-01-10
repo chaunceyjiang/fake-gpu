@@ -27,6 +27,7 @@ add_compile_options (
     -Wfloat-equal
     -Wshadow
     -Wcast-qual
+    -Wno-unused-parameter
 )
 
 include_directories (

@@ -1,12 +1,12 @@
 # Makefile for building CUDA hook
 
 # Default values
-CUDA_ARCHITECTURE:=86 # a: (Tesla P100: 60, GTX1080Ti: 61, Tesla V100: 70, RTX2080Ti: 75, NVIDIA A100: 80, RTX3080Ti / RTX3090 / RTX A6000: 86, RTX4090: 89, NVIDIA H100: 90)
-BUILD_TYPE:=Debug # t: (Debug, Release)
-VERBOSE_MAKEFILE:=OFF # b: (ON, OFF)
-WORK_PATH:=$(shell cd $(dir $0) && pwd)
-OUTPUT_DIR:=$(WORK_PATH)/output
-BUILD_DIR:=$(WORK_PATH)/build
+CUDA_ARCHITECTURE := 86 # a: (Tesla P100: 60, GTX1080Ti: 61, Tesla V100: 70, RTX2080Ti: 75, NVIDIA A100: 80, RTX3080Ti / RTX3090 / RTX A6000: 86, RTX4090: 89, NVIDIA H100: 90)
+BUILD_TYPE := Debug # t: (Debug, Release)
+VERBOSE_MAKEFILE := OFF # b: (ON, OFF)
+WORK_PATH := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
+OUTPUT_DIR := $(WORK_PATH)/output
+BUILD_DIR := $(WORK_PATH)/build
 
 # Target: all
 .PHONY: all
@@ -47,10 +47,8 @@ version:
 .PHONY: default
 default: all version
 
-current_dir := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
-
 .PHONY: docker-build
 docker-build:
 	docker build -t fake-gpu -f Dockerfile .
-	docker run --rm -v $(current_dir):/mnt fake-gpu cp /fake-gpu/output/lib64/libfake_gpu.so /mnt/libfake_gpu.so
+	docker run --rm -v $(WORK_PATH):/mnt fake-gpu cp /fake-gpu/output/lib64/libfake_gpu.so /mnt/libfake_gpu.so
 
