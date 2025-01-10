@@ -6,10 +6,12 @@
 #include "macro_common.h"
 #include "nvml_subset.h"
 #include "trace_profile.h"
+
 GPUList nvidia_gpus;
 char *node_name = NULL;
+
 // load configuration file
-__attribute__((constructor)) void init() {
+void init() {
     // read the configuration file path from the environment variable
     const char *config_path = std::getenv("FAKE_GPU_CONFIG");
     node_name = std::getenv("NODE_NAME");
@@ -26,21 +28,47 @@ __attribute__((constructor)) void init() {
         // print the GPU information
         HLOG("GPU Name: %s, UUID: %s", gpu.name.c_str(), gpu.uuid.c_str());
     }
+    // for each GPU, set the index
+    for (std::vector<GPU>::size_type i = 0; i < nvidia_gpus.size(); i++) {
+        nvidia_gpus[i].index = i;
+    }
+    // if node_name is set , uuid add node_name
+    if (node_name != NULL) {
+        for (std::vector<GPU>::size_type i = 0; i < nvidia_gpus.size(); i++) {
+            nvidia_gpus[i].uuid = nvidia_gpus[i].uuid + "-" + node_name;
+        }
+    }
+    HLOG("Fake GPU initialized");
+    HLOG("Node name: %s", node_name);
+    HLOG("Number of NVIDIA GPUs: %ld", nvidia_gpus.size());
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlInit_v2() {
     HOOK_TRACE_PROFILE("nvmlInit_v2");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    if (nvidia_gpus.empty()) {
+        init();
+    }
+    if (nvidia_gpus.empty()) {
+        return NVML_ERROR_NOT_FOUND;
+    }
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlInitWithFlags(unsigned int flags) {
     HOOK_TRACE_PROFILE("nvmlInitWithFlags");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    if (nvidia_gpus.empty()) {
+        init();
+    }
+    if (nvidia_gpus.empty()) {
+        return NVML_ERROR_NOT_FOUND;
+    }
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlShutdown() {
     HOOK_TRACE_PROFILE("nvmlShutdown");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    nvidia_gpus.clear();
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT const char *nvmlErrorString(nvmlReturn_t result) {
@@ -50,7 +78,11 @@ HOOK_C_API HOOK_DECL_EXPORT const char *nvmlErrorString(nvmlReturn_t result) {
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlSystemGetDriverVersion(char *version, unsigned int length) {
     HOOK_TRACE_PROFILE("nvmlSystemGetDriverVersion");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    if (nvidia_gpus.empty()) {
+        return NVML_ERROR_NOT_FOUND;
+    }
+    nvidia_gpus[0].driver_version.copy(version, length);
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlSystemGetNVMLVersion(char *version, unsigned int length) {
@@ -60,7 +92,11 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlSystemGetNVMLVersion(char *version,
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlSystemGetCudaDriverVersion(int *cudaDriverVersion) {
     HOOK_TRACE_PROFILE("nvmlSystemGetCudaDriverVersion");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    if (nvidia_gpus.empty()) {
+        return NVML_ERROR_NOT_FOUND;
+    }
+    *cudaDriverVersion = nvidia_gpus[0].cuda_version;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlSystemGetCudaDriverVersion_v2(int *cudaDriverVersion) {
@@ -123,7 +159,11 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlSystemGetHicVersion(unsigned int *h
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetCount_v2(unsigned int *deviceCount) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetCount_v2");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    if (nvidia_gpus.empty()) {
+        return NVML_ERROR_NOT_FOUND;
+    }
+    *deviceCount = nvidia_gpus.size();
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetAttributes_v2(nvmlDevice_t device,
@@ -134,7 +174,11 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetAttributes_v2(nvmlDevice_t
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetHandleByIndex_v2(unsigned int index, nvmlDevice_t *device) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetHandleByIndex_v2");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    if (nvidia_gpus.empty()) {
+        return NVML_ERROR_NOT_FOUND;
+    }
+    *device = reinterpret_cast<nvmlDevice_t>(&nvidia_gpus[index]);
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetHandleBySerial(const char *serial, nvmlDevice_t *device) {
@@ -154,7 +198,13 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetHandleByPciBusId_v2(const 
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetName(nvmlDevice_t device, char *name, unsigned int length) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetName");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    if (nvidia_gpus.empty()) {
+        return NVML_ERROR_NOT_FOUND;
+    }
+    // 将 nvmlDevice_t 转换为 GPU 对象
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    gpu->name.copy(name, length);
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetBrand(nvmlDevice_t device, nvmlBrandType_t *type) {
@@ -232,7 +282,13 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetP2PStatus(nvmlDevice_t dev
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetUUID(nvmlDevice_t device, char *uuid, unsigned int length) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetUUID");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    if (nvidia_gpus.empty()) {
+        return NVML_ERROR_NOT_FOUND;
+    }
+    // convert nvmlDevice_t to GPU object
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    gpu->uuid.copy(uuid, length);
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlVgpuInstanceGetMdevUUID(nvmlVgpuInstance_t vgpuInstance, char *mdevUuid,
@@ -243,7 +299,13 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlVgpuInstanceGetMdevUUID(nvmlVgpuIns
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetMinorNumber(nvmlDevice_t device, unsigned int *minorNumber) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetMinorNumber");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    if (nvidia_gpus.empty()) {
+        return NVML_ERROR_NOT_FOUND;
+    }
+    // convert nvmlDevice_t to GPU object
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    *minorNumber = gpu->index;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetBoardPartNumber(nvmlDevice_t device, char *partNumber,
@@ -292,7 +354,16 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetPersistenceMode(nvmlDevice
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetPciInfo_v3(nvmlDevice_t device, nvmlPciInfo_t *pci) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetPciInfo_v3");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    if (nvidia_gpus.empty()) {
+        return NVML_ERROR_NOT_FOUND;
+    }
+    // convert nvmlDevice_t to GPU object
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    gpu->pci.bus_id.copy(pci->busId, NVML_DEVICE_PCI_BUS_ID_BUFFER_SIZE);
+    pci->domain = gpu->pci.domain_id;
+    pci->bus = gpu->pci.device_id;
+    pci->pciSubSystemId = gpu->pci.sub_system_id;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetMaxPcieLinkGeneration(nvmlDevice_t device,

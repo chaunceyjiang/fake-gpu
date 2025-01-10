@@ -35,12 +35,13 @@ struct NVLink {
 // GPU struct
 struct GPU {
     std::string name;
+    int index;
     std::string uuid;
     std::string driver_version;
     int ram;  // RAM size
     std::string ram_unit;
     std::string brand;
-    std::string cuda_version;
+    int cuda_version;
     int cuda_cores;
     PCI pci;
     NVLink nvlink;
@@ -51,7 +52,7 @@ struct GPU {
         gpu.ram = node["ram"].as<int>();
         gpu.ram_unit = node["ram_unit"].as<std::string>();
         gpu.brand = node["brand"].as<std::string>();
-        gpu.cuda_version = node["cuda_version"].as<std::string>();
+        gpu.cuda_version = node["cuda_version"].as<int>();
         gpu.cuda_cores = node["cuda_cores"].as<int>();
         node["pci"] >> gpu.pci;
         node["nvlink"] >> gpu.nvlink;
