@@ -1,5 +1,4 @@
 #include "cudart_subset.h"
-#include "hook.h"
 #include "macro_common.h"
 #include "trace_profile.h"
 

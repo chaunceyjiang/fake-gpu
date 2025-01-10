@@ -1,4 +1,3 @@
-#include "hook.h"
 #include "macro_common.h"
 #include "nvml_subset.h"
 #include "trace_profile.h"
