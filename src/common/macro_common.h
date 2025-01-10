@@ -5,6 +5,7 @@
 #include <string.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include <ctime>
 
 #define HOOK_C_API extern "C"
 #define HOOK_DECL_EXPORT __attribute__((visibility("default")))
