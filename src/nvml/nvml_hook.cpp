@@ -1,11 +1,117 @@
 #include <yaml-cpp/yaml.h>
 
+#include <chrono>
 #include <iostream>
+#include <random>
+#include <thread>
 
 #include "common.h"
 #include "macro_common.h"
 #include "nvml_subset.h"
 #include "trace_profile.h"
+/*
+
+// PCI struct
+struct PCI {
+    std::string bus_id;
+    int device_id;
+    int domain_id;
+    int sub_system_id;
+    friend void operator>>(const YAML::Node &node, PCI &pci) {
+        pci.bus_id = node["bus_id"].as<std::string>();
+        pci.device_id = node["device_id"].as<int>();
+        pci.domain_id = node["domain_id"].as<int>();
+        pci.sub_system_id = node["sub_system_id"].as<int>();
+    }
+};
+
+// NVLink struct
+struct NVLink {
+    std::string version;
+    int capacity;
+    int bandwidth;
+    std::vector<std::string> peer_gpus;  // Peer GPU UUID
+    friend void operator>>(const YAML::Node &node, NVLink &nvlink) {
+        nvlink.version = node["version"].as<std::string>();
+        nvlink.capacity = node["capacity"].as<int>();
+        nvlink.bandwidth = node["bandwidth"].as<int>();
+        // if peer_gpu is not empty, strore all peer GPU UUIDs to peer_gpus
+        if (node["peer_gpu"]) {
+            for (const auto &peer_gpu_node : node["peer_gpu"]) {
+                nvlink.peer_gpus.push_back(peer_gpu_node.as<std::string>());
+            }
+        }
+    }
+};
+struct MIG {
+    bool enabled;
+
+    friend void operator>>(const YAML::Node &node, MIG &mig) {
+        mig.enabled = node["enabled"].as<bool>();
+    }
+};
+
+struct Event {
+    int type;
+    int data;
+    friend void operator>>(const YAML::Node &node, Event &event) {
+        event.type = node["type"].as<int>();
+        event.data = node["data"].as<int>();
+    }
+};
+
+using EventList = std::vector<Event>;
+
+struct EventSet {
+    // define the event set
+    // key is GPU UUID, value is a list of events
+    std::map<std::string, EventList> events;
+    // key is GPU UUID, value is the index of the next event
+    std::map<std::string, int> next_event;
+};
+
+// GPU struct
+struct GPU {
+    std::string name;
+    int index;
+    std::string uuid;
+    std::string driver_version;
+    int ram;  // RAM size
+    std::string ram_unit;
+    std::string brand;
+    int cuda_version;
+    int cuda_cores;
+    PCI pci;
+    NVLink nvlink;
+    MIG mig;
+    EventList events;
+    friend void operator>>(const YAML::Node &node, GPU &gpu) {
+        gpu.name = node["name"].as<std::string>();
+        gpu.uuid = node["uuid"].as<std::string>();
+        gpu.driver_version = node["driver_version"].as<std::string>();
+        gpu.ram = node["ram"].as<int>();
+        gpu.ram_unit = node["ram_unit"].as<std::string>();
+        gpu.brand = node["brand"].as<std::string>();
+        gpu.cuda_version = node["cuda_version"].as<int>();
+        gpu.cuda_cores = node["cuda_cores"].as<int>();
+        node["pci"] >> gpu.pci;
+        node["nvlink"] >> gpu.nvlink;
+        node["mig"] >> gpu.mig;
+        // if events is not empty, strore all events to events
+        if (node["events"]) {
+            for (const auto &event_node : node["events"]) {
+                Event event;
+                event_node >> event;
+                gpu.events.push_back(event);
+            }
+        }
+    }
+};
+
+// strore all GPUs
+using GPUList = std::vector<GPU>;
+
+*/
 
 GPUList nvidia_gpus;
 char *node_name = NULL;
@@ -73,6 +179,48 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlShutdown() {
 
 HOOK_C_API HOOK_DECL_EXPORT const char *nvmlErrorString(nvmlReturn_t result) {
     HOOK_TRACE_PROFILE("nvmlErrorString");
+    switch (result) {
+        case NVML_SUCCESS:
+            return "NVML_SUCCESS";
+        case NVML_ERROR_UNINITIALIZED:
+            return "NVML_ERROR_UNINITIALIZED";
+        case NVML_ERROR_INVALID_ARGUMENT:
+            return "NVML_ERROR_INVALID_ARGUMENT";
+        case NVML_ERROR_NOT_SUPPORTED:
+            return "NVML_ERROR_NOT_SUPPORTED";
+        case NVML_ERROR_NO_PERMISSION:
+            return "NVML_ERROR_NO_PERMISSION";
+        case NVML_ERROR_ALREADY_INITIALIZED:
+            return "NVML_ERROR_ALREADY_INITIALIZED";
+        case NVML_ERROR_NOT_FOUND:
+            return "NVML_ERROR_NOT_FOUND";
+        case NVML_ERROR_INSUFFICIENT_SIZE:
+            return "NVML_ERROR_INSUFFICIENT_SIZE";
+        case NVML_ERROR_INSUFFICIENT_POWER:
+            return "NVML_ERROR_INSUFFICIENT_POWER";
+        case NVML_ERROR_DRIVER_NOT_LOADED:
+            return "NVML_ERROR_DRIVER_NOT_LOADED";
+        case NVML_ERROR_TIMEOUT:
+            return "NVML_ERROR_TIMEOUT";
+        case NVML_ERROR_IRQ_ISSUE:
+            return "NVML_ERROR_IRQ_ISSUE";
+        case NVML_ERROR_LIBRARY_NOT_FOUND:
+            return "NVML_ERROR_LIBRARY_NOT_FOUND";
+        case NVML_ERROR_FUNCTION_NOT_FOUND:
+            return "NVML_ERROR_FUNCTION_NOT_FOUND";
+        case NVML_ERROR_CORRUPTED_INFOROM:
+            return "NVML_ERROR_CORRUPTED_INFOROM";
+        case NVML_ERROR_GPU_IS_LOST:
+            return "NVML_ERROR_GPU_IS_LOST";
+        case NVML_ERROR_RESET_REQUIRED:
+            return "NVML_ERROR_RESET_REQUIRED";
+        case NVML_ERROR_OPERATING_SYSTEM:
+            return "NVML_ERROR_OPERATING_SYSTEM";
+        case NVML_ERROR_LIB_RM_VERSION_MISMATCH:
+            return "NVML_ERROR_LIB_RM_VERSION_MISMATCH";
+        default:
+            return "NVML_ERROR_UNKNOWN";
+    }
     return "NVML_ERROR_INVALID_ARGUMENT";
 }
 
@@ -188,6 +336,15 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetHandleBySerial(const char 
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetHandleByUUID(const char *uuid, nvmlDevice_t *device) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetHandleByUUID");
+    if (nvidia_gpus.empty()) {
+        return NVML_ERROR_NOT_FOUND;
+    }
+    for (std::vector<GPU>::size_type i = 0; i < nvidia_gpus.size(); i++) {
+        if (nvidia_gpus[i].uuid == uuid) {
+            *device = reinterpret_cast<nvmlDevice_t>(&nvidia_gpus[i]);
+            return NVML_SUCCESS;
+        }
+    }
     return NVML_ERROR_INVALID_ARGUMENT;
 }
 
@@ -209,12 +366,34 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetName(nvmlDevice_t device, 
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetBrand(nvmlDevice_t device, nvmlBrandType_t *type) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetBrand");
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    std::string brandStr = gpu->brand;
+    std::transform(brandStr.begin(), brandStr.end(), brandStr.begin(), ::toupper);
+    if (brandStr == "QUADRO") {
+        *type = NVML_BRAND_QUADRO;
+    } else if (brandStr == "TESLA") {
+        *type = NVML_BRAND_TESLA;
+    } else if (brandStr == "NVS") {
+        *type = NVML_BRAND_NVS;
+    } else if (brandStr == "GRID") {
+        *type = NVML_BRAND_GRID;
+    } else if (brandStr == "GEFORCE") {
+        *type = NVML_BRAND_GEFORCE;
+    } else if (brandStr == "TITAN") {
+        *type = NVML_BRAND_TITAN;
+    }
     return NVML_ERROR_INVALID_ARGUMENT;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetIndex(nvmlDevice_t device, unsigned int *index) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetIndex");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    if (nvidia_gpus.empty()) {
+        return NVML_ERROR_NOT_FOUND;
+    }
+    // convert nvmlDevice_t to GPU object
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    *index = gpu->index;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetSerial(nvmlDevice_t device, char *serial, unsigned int length) {
@@ -256,7 +435,8 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceClearCpuAffinity(nvmlDevice_t
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetTopologyCommonAncestor(nvmlDevice_t device1, nvmlDevice_t device2,
                                                                              nvmlGpuTopologyLevel_t *pathInfo) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetTopologyCommonAncestor");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    *pathInfo = NVML_TOPOLOGY_INTERNAL;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetTopologyNearestGpus(nvmlDevice_t device,
@@ -581,6 +761,13 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetGpuOperationMode(nvmlDevic
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetMemoryInfo(nvmlDevice_t device, nvmlMemory_t *memory) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetMemoryInfo");
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    if (gpu != nullptr) {
+        memory->total = gpu->memory.total;
+        memory->free = gpu->memory.free;
+        memory->used = gpu->memory.used;
+        return NVML_SUCCESS;
+    }
     return NVML_ERROR_INVALID_ARGUMENT;
 }
 
@@ -917,7 +1104,14 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceClearAccountingPids(nvmlDevic
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetNvLinkState(nvmlDevice_t device, unsigned int link,
                                                                   nvmlEnableState_t *isActive) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetNvLinkState");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    // convert nvmlDevice_t to GPU object
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    if (link < gpu->nvlink.peer_gpus.size()) {
+        *isActive = NVML_FEATURE_ENABLED;
+    } else {
+        *isActive = NVML_FEATURE_DISABLED;
+    }
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetNvLinkVersion(nvmlDevice_t device, unsigned int link,
@@ -995,30 +1189,75 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetNvLinkRemoteDeviceType(
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlEventSetCreate(nvmlEventSet_t *set) {
     HOOK_TRACE_PROFILE("nvmlEventSetCreate");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    EventSet *s = new EventSet();
+    s->events = std::map<std::string, EventList>();
+    s->next_event = std::map<std::string, int>();
+    s->device_map = std::map<std::string, GPU *>();
+    *set = reinterpret_cast<nvmlEventSet_t>(s);
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceRegisterEvents(nvmlDevice_t device, unsigned long long eventTypes,
                                                                   nvmlEventSet_t set) {
     HOOK_TRACE_PROFILE("nvmlDeviceRegisterEvents");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    EventSet *s = reinterpret_cast<EventSet *>(set);
+    s->events[gpu->uuid] = EventList();
+    s->next_event[gpu->uuid] = 0;
+    s->device_map[gpu->uuid] = gpu;
+    for (auto event : gpu->events) {
+        s->events[gpu->uuid].push_back(event);
+        HLOG("RegisterEvents: %s %d", gpu->uuid.c_str(), event.type);
+        HLOG("RegisterEvents: %s %d", gpu->uuid.c_str(), event.data);
+    }
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetSupportedEventTypes(nvmlDevice_t device,
                                                                           unsigned long long *eventTypes) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetSupportedEventTypes");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    *eventTypes = 415;
+    HLOG("SupportedEventTypes: %s %llu", gpu->uuid.c_str(), *eventTypes);
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlEventSetWait_v2(nvmlEventSet_t set, nvmlEventData_t *data,
                                                              unsigned int timeoutms) {
     HOOK_TRACE_PROFILE("nvmlEventSetWait_v2");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    EventSet *s = reinterpret_cast<EventSet *>(set);
+    if (s->events.size() == 0) {
+        HLOG("EventSetWait_v2: no events");
+        return NVML_ERROR_TIMEOUT;
+    }
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis_int(static_cast<unsigned int>(timeoutms / 2),
+                                            static_cast<unsigned int>(2 * timeoutms));
+    unsigned int random_int = dis_int(gen);
+    std::this_thread::sleep_for(std::chrono::milliseconds(random_int));
+    std::srand(std::time(0));
+    auto it = std::next(s->events.begin(), std::rand() % s->events.size());
+    if (random_int < timeoutms) {
+        Event event = it->second[s->next_event[it->first]];
+        s->next_event[it->first]++;
+        s->next_event[it->first] %= it->second.size();
+        data->eventType = event.type;
+        data->eventData = event.data;
+        data->device = reinterpret_cast<nvmlDevice_t>(s->device_map[it->first]);
+        HLOG("EventSetWait_v2: %s %d", it->first.c_str(), event.type);
+        HLOG("EventSetWait_v2: %s %d", it->first.c_str(), event.data);
+        return NVML_SUCCESS;
+    }
+    HLOG("EventSetWait_v2: timeout");
+    return NVML_ERROR_TIMEOUT;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlEventSetFree(nvmlEventSet_t set) {
     HOOK_TRACE_PROFILE("nvmlEventSetFree");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    EventSet *s = reinterpret_cast<EventSet *>(set);
+    delete s;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceModifyDrainState(nvmlPciInfo_t *pciInfo,
@@ -1357,6 +1596,13 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceSetMigMode(nvmlDevice_t devic
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetMigMode(nvmlDevice_t device, unsigned int *currentMode,
                                                               unsigned int *pendingMode) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetMigMode");
+    // convert nvmlDevice_t to GPU object
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    if (gpu != nullptr) {
+        *currentMode = gpu->mig.enabled;
+        *pendingMode = gpu->mig.enabled;
+        return NVML_SUCCESS;
+    }
     return NVML_ERROR_INVALID_ARGUMENT;
 }
 
@@ -1600,10 +1846,18 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetGpuInstancePossiblePlaceme
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlInternalGetExportTable(const void **ppExportTable, void *pExportTableId) {
     HOOK_TRACE_PROFILE("nvmlInternalGetExportTable");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetMemoryInfo_v2(nvmlDevice_t device, nvmlMemory_v2_t *memory) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetMemoryInfo_v2");
+    // convert nvmlDevice_t to GPU object
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    if (gpu != nullptr) {
+        memory->total = gpu->memory.total;
+        memory->free = gpu->memory.free;
+        memory->used = gpu->memory.used;
+        return NVML_SUCCESS;
+    }
     return NVML_ERROR_INVALID_ARGUMENT;
 }

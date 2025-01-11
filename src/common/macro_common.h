@@ -5,6 +5,7 @@
 #include <string.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+
 #include <ctime>
 
 #define HOOK_C_API extern "C"
@@ -34,7 +35,7 @@ inline long int get_tid() {
     return tid;
 }
 
-#define HOOK_LOG_TAG "CUDA-HOOK"
+#define HOOK_LOG_TAG "FAKE-GPU"
 #define HOOK_LOG_FILE(x) (strrchr(x, '/') ? (strrchr(x, '/') + 1) : x)
 #define HLOG(format, ...)                                                                                        \
     do {                                                                                                         \
