@@ -1,3 +1,7 @@
+# github.com/NVIDIA/go-nvml v0.12.4-1
+## explicit; go 1.20
+github.com/NVIDIA/go-nvml/pkg/dl
+github.com/NVIDIA/go-nvml/pkg/nvml
 # github.com/containerd/log v0.1.0
 ## explicit; go 1.20
 github.com/containerd/log
@@ -25,25 +29,24 @@ github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
-# github.com/jedib0t/go-pretty/v6 v6.6.5
-## explicit; go 1.17
-github.com/jedib0t/go-pretty/v6/table
-github.com/jedib0t/go-pretty/v6/text
+# github.com/inconshreveable/mousetrap v1.1.0
+## explicit; go 1.18
+github.com/inconshreveable/mousetrap
 # github.com/knqyf263/go-plugin v0.8.1-0.20240827022226-114c6257e441
 ## explicit; go 1.20
 github.com/knqyf263/go-plugin/wasm
-# github.com/mattn/go-runewidth v0.0.15
-## explicit; go 1.9
-github.com/mattn/go-runewidth
 # github.com/opencontainers/runtime-spec v1.0.3-0.20220825212826-86290f6a00fb
 ## explicit
 github.com/opencontainers/runtime-spec/specs-go
-# github.com/rivo/uniseg v0.2.0
-## explicit; go 1.12
-github.com/rivo/uniseg
 # github.com/sirupsen/logrus v1.9.3
 ## explicit; go 1.13
 github.com/sirupsen/logrus
+# github.com/spf13/cobra v1.8.1
+## explicit; go 1.15
+github.com/spf13/cobra
+# github.com/spf13/pflag v1.0.5
+## explicit; go 1.12
+github.com/spf13/pflag
 # github.com/tetratelabs/wazero v1.8.2-0.20241030035603-dc08732e57d5
 ## explicit; go 1.21
 github.com/tetratelabs/wazero
@@ -99,7 +102,6 @@ golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
-golang.org/x/text/width
 # google.golang.org/genproto/googleapis/rpc v0.0.0-20230731190214-cbb8c96f2d6d
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/rpc/status
