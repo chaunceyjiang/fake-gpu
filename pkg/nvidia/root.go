@@ -150,11 +150,6 @@ func run(args []string) error {
 			log.Fatalf("Unable to get name of device at index %d: %v", i, nvml.ErrorString(ret))
 		}
 		gpu.Name=name
-		driverVersion, ret := device.GetDriverVersion()
-		if ret != nvml.SUCCESS {
-			log.Fatalf("Unable to get driver version of device at index %d: %v", i, nvml.ErrorString(ret))
-		}
-		gpu.DriverVersion=driverVersion
 		gpus = append(gpus, gpu)
 	}
 
