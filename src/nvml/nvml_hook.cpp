@@ -6,9 +6,11 @@
 #include <thread>
 
 #include "common.h"
+#include "export_table.h"
 #include "macro_common.h"
 #include "nvml_subset.h"
 #include "trace_profile.h"
+
 /*
 
 // PCI struct
@@ -249,7 +251,11 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlSystemGetCudaDriverVersion(int *cud
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlSystemGetCudaDriverVersion_v2(int *cudaDriverVersion) {
     HOOK_TRACE_PROFILE("nvmlSystemGetCudaDriverVersion_v2");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    if (nvidia_gpus.empty()) {
+        return NVML_ERROR_NOT_FOUND;
+    }
+    *cudaDriverVersion = nvidia_gpus[0].cuda_version;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlSystemGetProcessName(unsigned int pid, char *name, unsigned int length) {
@@ -1844,11 +1850,6 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetGpuInstancePossiblePlaceme
     return NVML_ERROR_INVALID_ARGUMENT;
 }
 
-HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlInternalGetExportTable(const void **ppExportTable, void *pExportTableId) {
-    HOOK_TRACE_PROFILE("nvmlInternalGetExportTable");
-    return NVML_SUCCESS;
-}
-
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetMemoryInfo_v2(nvmlDevice_t device, nvmlMemory_v2_t *memory) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetMemoryInfo_v2");
     // convert nvmlDevice_t to GPU object
@@ -1860,4 +1861,75 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetMemoryInfo_v2(nvmlDevice_t
         return NVML_SUCCESS;
     }
     return NVML_ERROR_INVALID_ARGUMENT;
+}
+
+HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlInternalGetExportTable(const void **ppExportTable, void *pExportTableId) {
+    HOOK_TRACE_PROFILE("nvmlInternalGetExportTable");
+    // 将 void *pExportTableId 转换为 int 类型
+    // int exportTableId = *reinterpret_cast<int *>(pExportTableId);
+    // HLOG("nvmlInternalGetExportTable: exportTableId = %d", exportTableId);
+    // static NVMLExportTable nvmlTable = {
+    //     .nvmlInit_v2 = nvmlInit_v2,
+    //     .nvmlInitWithFlags = nvmlInitWithFlags,
+    //     .nvmlShutdown = nvmlShutdown,
+    //     .nvmlErrorString = nvmlErrorString,
+    //     .nvmlDeviceGetCount = nvmlDeviceGetCount,
+    //     .nvmlDeviceGetCount_v2 = nvmlDeviceGetCount_v2,
+    //     .nvmlDeviceGetHandleByIndex = nvmlDeviceGetHandleByIndex,
+    //     .nvmlDeviceGetHandleByIndex_v2 = nvmlDeviceGetHandleByIndex_v2,
+    //     .nvmlDeviceGetHandleBySerial = nvmlDeviceGetHandleBySerial,
+    //     .nvmlDeviceGetHandleByUUID = nvmlDeviceGetHandleByUUID,
+    //     .nvmlDeviceGetHandleByPciBusId = nvmlDeviceGetHandleByPciBusId,
+    //     .nvmlDeviceGetHandleByPciBusId_v2 = nvmlDeviceGetHandleByPciBusId_v2,
+    //     .nvmlDeviceGetName = nvmlDeviceGetName,
+    //     .nvmlDeviceGetGpuInstanceId = nvmlDeviceGetGpuInstanceId,
+    //     .nvmlDeviceGetComputeInstanceId = nvmlDeviceGetComputeInstanceId,
+    //     .nvmlDeviceGetMaxMigDeviceCount = nvmlDeviceGetMaxMigDeviceCount,
+    //     .nvmlDeviceGetMigDeviceHandleByIndex = nvmlDeviceGetMigDeviceHandleByIndex,
+    //     .nvmlDeviceGetDeviceHandleFromMigDeviceHandle = nvmlDeviceGetDeviceHandleFromMigDeviceHandle,
+    //     .nvmlDeviceGetAttributes_v2 = nvmlDeviceGetAttributes_v2,
+    //     .nvmlDeviceGetMemoryInfo_v2 = nvmlDeviceGetMemoryInfo_v2,
+    //     .nvmlDeviceGetPciInfo_v3 = nvmlDeviceGetPciInfo_v3,
+    //     .nvmlDeviceGetPciInfo_v2 = nvmlDeviceGetPciInfo_v2,
+    //     .nvmlDeviceRemoveGpu = nvmlDeviceRemoveGpu,
+    //     .nvmlEventSetWait = nvmlEventSetWait,
+    //     .nvmlDeviceGetAttributes = nvmlDeviceGetAttributes,
+    //     .nvmlComputeInstanceGetInfo = nvmlComputeInstanceGetInfo,
+    //     .nvmlComputeInstanceGetInfo_v2 = nvmlComputeInstanceGetInfo_v2,
+    //     .nvmlDeviceIsMigDeviceHandle = nvmlDeviceIsMigDeviceHandle,
+    //     .nvmlDeviceGetTopologyCommonAncestor = nvmlDeviceGetTopologyCommonAncestor,
+    //     .nvmlEventSetCreate = nvmlEventSetCreate,
+    //     .nvmlEventSetWait_v2 = nvmlEventSetWait_v2,
+    //     .nvmlSystemGetDriverVersion = nvmlSystemGetDriverVersion,
+    //     .nvmlDeviceGetNvLinkState = nvmlDeviceGetNvLinkState,
+    //     .nvmlSystemGetCudaDriverVersion_v2 = nvmlSystemGetCudaDriverVersion_v2,
+    //     .nvmlDeviceGetIndex = nvmlDeviceGetIndex,
+    //     .nvmlDeviceGetCudaComputeCapability = nvmlDeviceGetCudaComputeCapability,
+    //     .nvmlDeviceGetPersistenceMode = nvmlDeviceGetPersistenceMode,
+    //     .nvmlDeviceGetDisplayActive = nvmlDeviceGetDisplayActive,
+    //     .nvmlDeviceGetEccMode = nvmlDeviceGetEccMode,
+    //     .nvmlDeviceGetEncoderCapacity = nvmlDeviceGetEncoderCapacity,
+    //     .nvmlDeviceGetMigMode = nvmlDeviceGetMigMode,
+    //     .nvmlDeviceGetTotalEccErrors = nvmlDeviceGetTotalEccErrors,
+    //     .nvmlDeviceGetFanSpeed = nvmlDeviceGetFanSpeed,
+    //     .nvmlDeviceGetTemperature = nvmlDeviceGetTemperature,
+    //     .nvmlDeviceGetTemperatureThreshold = nvmlDeviceGetTemperatureThreshold,
+    //     .nvmlDeviceGetPowerUsage = nvmlDeviceGetPowerUsage,
+    //     .nvmlDeviceGetPowerManagementLimit = nvmlDeviceGetPowerManagementLimit,
+    //     .nvmlDeviceGetPowerManagementLimitConstraints = nvmlDeviceGetPowerManagementLimitConstraints,
+    //     .nvmlDeviceGetPowerManagementMode = nvmlDeviceGetPowerManagementMode,
+    //     .nvmlDeviceGetPerformanceState = nvmlDeviceGetPerformanceState,
+    //     .nvmlDeviceGetClockInfo = nvmlDeviceGetClockInfo,
+    //     .nvmlDeviceGetEnforcedPowerLimit = nvmlDeviceGetEnforcedPowerLimit,
+    //     .nvmlDeviceGetUtilizationRates = nvmlDeviceGetUtilizationRates,
+    //     .nvmlDeviceGetComputeMode = nvmlDeviceGetComputeMode,
+    //     .nvmlDeviceGetVirtualizationMode = nvmlDeviceGetVirtualizationMode,
+    //     .nvmlDeviceValidateInforom = nvmlDeviceValidateInforom,
+    //     .nvmlEventSetFree = nvmlEventSetFree,
+    //     .nvmlDeviceRegisterEvents = nvmlDeviceRegisterEvents,
+    //     .nvmlDeviceGetSupportedEventTypes = nvmlDeviceGetSupportedEventTypes,
+
+    // };
+    // *ppExportTable = &nvmlTable;
+    return NVML_SUCCESS;
 }

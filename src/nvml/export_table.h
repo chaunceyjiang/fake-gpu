@@ -1,0 +1,65 @@
+#include "nvml_subset.h"
+
+// typedef struct {
+//     // 这里是 nvml 库中函数的函数指针
+//     nvmlReturn_t (*nvmlInit_v2)(void);
+//     nvmlReturn_t (*nvmlInitWithFlags)(unsigned int);
+//     nvmlReturn_t (*nvmlShutdown)(void);
+//     const char *(*nvmlErrorString)(nvmlReturn_t);
+//     nvmlReturn_t (*nvmlDeviceGetCount)(unsigned int *);
+//     nvmlReturn_t (*nvmlDeviceGetCount_v2)(unsigned int *);
+//     nvmlReturn_t (*nvmlDeviceGetHandleByIndex)(unsigned int, nvmlDevice_t *);
+//     nvmlReturn_t (*nvmlDeviceGetHandleByIndex_v2)(unsigned int, nvmlDevice_t *);
+//     nvmlReturn_t (*nvmlDeviceGetHandleBySerial)(const char *, nvmlDevice_t *);
+//     nvmlReturn_t (*nvmlDeviceGetHandleByUUID)(const char *, nvmlDevice_t *);
+//     nvmlReturn_t (*nvmlDeviceGetHandleByPciBusId)(const char *, nvmlDevice_t *);
+//     nvmlReturn_t (*nvmlDeviceGetHandleByPciBusId_v2)(const char *, nvmlDevice_t *);
+//     nvmlReturn_t (*nvmlDeviceGetName)(nvmlDevice_t, char *, unsigned int);
+//     nvmlReturn_t (*nvmlDeviceGetGpuInstanceId)(nvmlDevice_t, unsigned int *);
+//     nvmlReturn_t (*nvmlDeviceGetComputeInstanceId)(nvmlDevice_t, unsigned int *);
+//     nvmlReturn_t (*nvmlDeviceGetMaxMigDeviceCount)(nvmlDevice_t, unsigned int *);
+//     nvmlReturn_t (*nvmlDeviceGetMigDeviceHandleByIndex)(nvmlDevice_t, unsigned int, nvmlDevice_t *);
+//     nvmlReturn_t (*nvmlDeviceGetDeviceHandleFromMigDeviceHandle)(nvmlDevice_t, nvmlDevice_t *);
+//     nvmlReturn_t (*nvmlDeviceGetAttributes_v2)(nvmlDevice_t, nvmlDeviceAttributes_t *);
+//     nvmlReturn_t (*nvmlDeviceGetMemoryInfo_v2)(nvmlDevice_t, nvmlMemory_v2_t *);
+//     nvmlReturn_t (*nvmlDeviceGetPciInfo_v3)(nvmlDevice_t, nvmlPciInfo_t *);
+//     nvmlReturn_t (*nvmlDeviceGetPciInfo_v2)(nvmlDevice_t, nvmlPciInfo_t *);
+//     nvmlReturn_t (*nvmlDeviceRemoveGpu)(nvmlPciInfo_t *);
+//     nvmlReturn_t (*nvmlEventSetWait)(nvmlEventSet_t, nvmlEventData_t *, unsigned int);
+//     nvmlReturn_t (*nvmlDeviceGetAttributes)(nvmlDevice_t, nvmlDeviceAttributes_t *);
+//     nvmlReturn_t (*nvmlComputeInstanceGetInfo)(nvmlComputeInstance_t, nvmlComputeInstanceInfo_t *);
+//     nvmlReturn_t (*nvmlComputeInstanceGetInfo_v2)(nvmlComputeInstance_t, nvmlComputeInstanceInfo_t *);
+//     nvmlReturn_t (*nvmlDeviceIsMigDeviceHandle)(nvmlDevice_t, unsigned int *);
+//     nvmlReturn_t (*nvmlDeviceGetTopologyCommonAncestor)(nvmlDevice_t, nvmlDevice_t, nvmlGpuTopologyLevel_t *);
+//     nvmlReturn_t (*nvmlEventSetCreate)(nvmlEventSet_t *);
+//     nvmlReturn_t (*nvmlEventSetWait_v2)(nvmlEventSet_t, nvmlEventData_t *, unsigned int);
+//     nvmlReturn_t (*nvmlSystemGetDriverVersion)(char *, unsigned int);
+//     nvmlReturn_t (*nvmlDeviceGetNvLinkState)(nvmlDevice_t, unsigned int, nvmlEnableState_t *);
+//     nvmlReturn_t (*nvmlSystemGetCudaDriverVersion_v2)(int *);
+//     nvmlReturn_t (*nvmlDeviceGetIndex)(nvmlDevice_t, unsigned int *);
+//     nvmlReturn_t (*nvmlDeviceGetCudaComputeCapability)(nvmlDevice_t, int *, int *);
+//     nvmlReturn_t (*nvmlDeviceGetPersistenceMode)(nvmlDevice_t, nvmlEnableState_t *);
+//     nvmlReturn_t (*nvmlDeviceGetDisplayActive)(nvmlDevice_t, nvmlEnableState_t *);
+//     nvmlReturn_t (*nvmlDeviceGetEccMode)(nvmlDevice_t, nvmlEnableState_t *, nvmlEnableState_t *);
+//     nvmlReturn_t (*nvmlDeviceGetEncoderCapacity)(nvmlDevice_t, nvmlEncoderType_t, unsigned int *);
+//     nvmlReturn_t (*nvmlDeviceGetMigMode)(nvmlDevice_t, unsigned int *, unsigned int *);
+//     nvmlReturn_t (*nvmlDeviceGetTotalEccErrors)(nvmlDevice_t, nvmlMemoryErrorType_t, nvmlEccCounterType_t,
+//                                                 unsigned long long *);
+//     nvmlReturn_t (*nvmlDeviceGetFanSpeed)(nvmlDevice_t, unsigned int *);
+//     nvmlReturn_t (*nvmlDeviceGetTemperature)(nvmlDevice_t, nvmlTemperatureSensors_t, unsigned int *);
+//     nvmlReturn_t (*nvmlDeviceGetTemperatureThreshold)(nvmlDevice_t, nvmlTemperatureThresholds_t, unsigned int *);
+//     nvmlReturn_t (*nvmlDeviceGetPowerUsage)(nvmlDevice_t, unsigned int *);
+//     nvmlReturn_t (*nvmlDeviceGetPowerManagementLimit)(nvmlDevice_t, unsigned int *);
+//     nvmlReturn_t (*nvmlDeviceGetPowerManagementLimitConstraints)(nvmlDevice_t, unsigned int *, unsigned int *);
+//     nvmlReturn_t (*nvmlDeviceGetPowerManagementMode)(nvmlDevice_t, nvmlEnableState_t *);
+//     nvmlReturn_t (*nvmlDeviceGetPerformanceState)(nvmlDevice_t, nvmlPstates_t *);
+//     nvmlReturn_t (*nvmlDeviceGetClockInfo)(nvmlDevice_t, nvmlClockType_t, unsigned int *);
+//     nvmlReturn_t (*nvmlDeviceGetEnforcedPowerLimit)(nvmlDevice_t, unsigned int *);
+//     nvmlReturn_t (*nvmlDeviceGetUtilizationRates)(nvmlDevice_t, nvmlUtilization_t *);
+//     nvmlReturn_t (*nvmlDeviceGetComputeMode)(nvmlDevice_t, nvmlComputeMode_t *);
+//     nvmlReturn_t (*nvmlDeviceGetVirtualizationMode)(nvmlDevice_t, nvmlGpuVirtualizationMode_t *);
+//     nvmlReturn_t (*nvmlDeviceValidateInforom)(nvmlDevice_t);
+//     nvmlReturn_t (*nvmlEventSetFree)(nvmlEventSet_t);
+//     nvmlReturn_t (*nvmlDeviceRegisterEvents)(nvmlDevice_t, unsigned long long, nvmlEventSet_t);
+//     nvmlReturn_t (*nvmlDeviceGetSupportedEventTypes)(nvmlDevice_t, unsigned long long *);
+// } NVMLExportTable;
