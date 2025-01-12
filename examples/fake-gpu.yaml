@@ -1,7 +1,7 @@
 nvidia:
   - name: NVIDIA Tesla T4
     uuid: GPU-abc
-    driver_version: 440.33.01
+    driver_version: 540.33.01
     brand: Tesla
     cuda_version: 12020
     cuda_cores: 2560
@@ -27,7 +27,7 @@ nvidia:
       eventData: 43
     - eventType: 8
       eventData: 45
-  - name: NVIDIA Tesla T4
+  - name: NVIDIA Tesla P4
     uuid: GPU-bcd
     driver_version: 440.33.01
     brand: Tesla

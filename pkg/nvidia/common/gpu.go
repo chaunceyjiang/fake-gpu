@@ -4,6 +4,7 @@ type GPU struct {
 	Product       string
 	UUID          string
 	UsedMem       float32
+	BusID         string
 	TotalMem      int
 	Util          int
 	Idx           int

@@ -4,132 +4,106 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/NVIDIA/go-nvml/pkg/nvml"
+	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
 
 	"github.com/chaunceyjiang/fake-gpu/pkg/nvidia/common"
 )
 
-// type nvidiaSmiArgs struct {
-// 	GpuProduct  string
-// 	GpuUsedMem  float32
-// 	GpuTotalMem int
-// 	GpuUtil     int
-// 	GpuIdx      int
-// 	ProcessName string
-// }
+func busIdToString(busId [32]int8) string {
+	// 将 int8 数组转换为 byte 数组
+	byteArray := make([]byte, len(busId))
+	for i, v := range busId {
+		byteArray[i] = byte(v)
+	}
+	// 将 byte 数组转换为字符串，并去除空字符
+	return strings.Trim(string(byteArray), "\x00")
+}
 
-// // main is the entry point for the application.
-// // func main() {
-// // 	args := getNvidiaSmiArgs()
+func sizeString(str string, size int, alignRight bool) string {
+	if len(str) < size {
+		if alignRight {
+			str = strings.Repeat(" ", size-len(str)) + str
+		} else {
+			str = str + strings.Repeat(" ", size-len(str))
+		}
+	}
 
-// // 	printArgs(args)
-// // }
+	if len(str) > size {
+		str = str[:size-2] + ".."
+	}
 
-// func getNvidiaSmiArgs() (args nvidiaSmiArgs) {
-// 	nodeName := os.Getenv("NODE_NAME")
-// 	fmt.Println("Node name: ", nodeName)
-// 	args.GpuIdx = 1
-// 	args.GpuUsedMem = 1000
-// 	args.GpuUtil = 10
+	return str[:size]
+}
+func run() error {
+	/*
+			Sun Jan 12 08:42:33 2025
+		+---------------------------------------------------------------------------------------+
+		| NVIDIA-SMI 535.183.01             Driver Version: 535.183.01   CUDA Version: N/A      |
+		|-----------------------------------------+----------------------+----------------------+
+		| GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |
+		| Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |
+		|                                         |                      |               MIG M. |
+		|=========================================+======================+======================|
+		|   0  NVIDIA H100 80GB HBM3          On  | 00000000:18:00.0 Off |                    0 |
+		| N/A   28C    P0              75W / 700W |      0MiB / 81559MiB |      0%      Default |
+		|                                         |                      |             Disabled |
+		+-----------------------------------------+----------------------+----------------------+
+		|   1  NVIDIA H100 80GB HBM3          On  | 00000000:2A:00.0 Off |                    0 |
+		| N/A   29C    P0              71W / 700W |      0MiB / 81559MiB |      0%      Default |
+		|                                         |                      |             Disabled |
+		+-----------------------------------------+----------------------+----------------------+
+		|   2  NVIDIA H100 80GB HBM3          On  | 00000000:3A:00.0 Off |                    0 |
+		| N/A   32C    P0             117W / 700W |   7418MiB / 81559MiB |      0%      Default |
+		|                                         |                      |             Disabled |
+		+-----------------------------------------+----------------------+----------------------+
+		|   3  NVIDIA H100 80GB HBM3          On  | 00000000:AB:00.0 Off |                    0 |
+		| N/A   28C    P0             112W / 700W |  33333MiB / 81559MiB |      0%      Default |
+		|                                         |                      |             Disabled |
+		+-----------------------------------------+----------------------+----------------------+
+		|   4  NVIDIA H100 80GB HBM3          On  | 00000000:BA:00.0 Off |                    0 |
+		| N/A   31C    P0             116W / 700W |  79595MiB / 81559MiB |      0%      Default |
+		|                                         |                      |             Disabled |
+		+-----------------------------------------+----------------------+----------------------+
+		|   5  NVIDIA H100 80GB HBM3          On  | 00000000:DB:00.0 Off |                    0 |
+		| N/A   29C    P0             119W / 700W |  41489MiB / 81559MiB |      0%      Default |
+		|                                         |                      |             Disabled |
+		+-----------------------------------------+----------------------+----------------------+
 
-// 	// Read /proc/1/cmdline to get the process name
-// 	cmdlineFile, err := os.Open("/proc/1/cmdline")
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	defer cmdlineFile.Close()
-
-// 	// Read the file
-// 	cmdlineBytes := make([]byte, 50)
-// 	_, err = cmdlineFile.Read(cmdlineBytes)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	args.ProcessName = string(bytes.Trim(cmdlineBytes, "\x00"))
-
-// 	return args
-// }
-
-// func printArgs(args nvidiaSmiArgs) {
-// 	// Example:
-// 	//
-// 	// Wed Jun 29 14:19:35 2022
-// 	// +-----------------------------------------------------------------------------+
-// 	// | NVIDIA-SMI 470.129.06   Driver Version: 470.129.06   CUDA Version: 11.4     |
-// 	// |-------------------------------+----------------------+----------------------+
-// 	// | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
-// 	// | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
-// 	// |                               |                      |               MIG M. |
-// 	// |===============================+======================+======================|
-// 	// |   0  Tesla T4            Off  | 00000001:00:00.0 Off |                  Off |
-// 	// | N/A   33C    P8    11W /  70W |      4MiB / 16127MiB |      0%      Default |
-// 	// |                               |                      |                  N/A |
-// 	// +-------------------------------+----------------------+----------------------+
-
-// 	// +-----------------------------------------------------------------------------+
-// 	// | Processes:                                                                  |
-// 	// |  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
-// 	// |        ID   ID                                                   Usage      |
-// 	// |=============================================================================|
-// 	// |    0   N/A  N/A       964      G   /usr/lib/xorg/Xorg                  4MiB |
-// 	// +-----------------------------------------------------------------------------+
-
-// 	// Print date
-// 	fmt.Println(time.Now().Format(time.ANSIC))
-// 	t := table.NewWriter()
-// 	t.SetOutputMirror(os.Stdout)
-// 	t.SetTitle("NVIDIA-SMI 470.129.06   Driver Version: 470.129.06   CUDA Version: 11.4")
-// 	t.AppendSeparator()
-// 	t.AppendRow(table.Row{"GPU  Name        Persistence-M", "Bus-Id        Disp.A", "Volatile Uncorr. ECC"})
-// 	t.AppendRow(table.Row{"Fan  Temp  Perf  Pwr:Usage/Cap", "        Memory-Usage", "GPU-Util  Compute M."})
-// 	t.AppendRow(table.Row{"", "", "              MIG M."})
-// 	t.AppendSeparator()
-// 	t.AppendRow(table.Row{fmt.Sprintf("%s  %s%s", sizeString(strconv.Itoa(args.GpuIdx), 3, true), sizeString(args.GpuProduct, 12, false), sizeString("Off", 13, true)), fmt.Sprintf("%s %s", sizeString("00000001:00:00.0", 16, false), sizeString("Off", 3, true)), sizeString("Off", 20, true)})
-// 	t.AppendRow(table.Row{"N/A   33C    P8    11W /  70W", sizeString(fmt.Sprintf("%dMiB / %dMiB", int(args.GpuUsedMem), args.GpuTotalMem), 20, true), fmt.Sprintf("%s %s", sizeString(strconv.Itoa(args.GpuUtil)+"%", 8, true), sizeString("Default", 11, true))})
-// 	t.AppendRow(table.Row{"", "", sizeString("N/A", 20, true)})
-// 	t.AppendSeparator()
-// 	t.Render()
-
-// 	fmt.Printf("\n")
-
-// 	t = table.NewWriter()
-// 	t.SetOutputMirror(os.Stdout)
-// 	t.AppendRow(table.Row{"Processes:"})
-// 	t.AppendRow(table.Row{" GPU   GI   CI        PID   Type   Process name                  GPU Memory "})
-// 	t.AppendRow(table.Row{"       ID   ID                                                   Usage      "})
-// 	t.AppendSeparator()
-// 	t.AppendRow(table.Row{fmt.Sprintf(" %s   %s%s%s%s   %s %s", sizeString(strconv.Itoa(args.GpuIdx), 3, true), sizeString("N/A", 5, false), sizeString("N/A", 10, false), sizeString(strconv.Itoa(os.Getpid()), 6, false), sizeString("G", 4, true), sizeString(args.ProcessName, 29, false), sizeString(fmt.Sprintf("%dMiB", int(args.GpuUsedMem)), 11, true))})
-// 	t.Render()
-// }
-
-// func sizeString(str string, size int, alignRight bool) string {
-// 	if len(str) < size {
-// 		if alignRight {
-// 			str = strings.Repeat(" ", size-len(str)) + str
-// 		} else {
-// 			str = str + strings.Repeat(" ", size-len(str))
-// 		}
-// 	}
-
-// 	if len(str) > size {
-// 		str = str[:size-2] + ".."
-// 	}
-
-//		return str[:size]
-//	}
-func run(args []string) error {
+		+---------------------------------------------------------------------------------------+
+		| Processes:                                                                            |
+		|  GPU   GI   CI        PID   Type   Process name                            GPU Memory |
+		|        ID   ID                                                             Usage      |
+		|=======================================================================================|
+		|    2   N/A  N/A   3102733      C   /app/.venv/bin/python                      3694MiB |
+		|    2   N/A  N/A   3358268      C   /app/.venv/bin/python                      3692MiB |
+		|    3   N/A  N/A   3557379      C   /usr/bin/python3                          33316MiB |
+		|    4   N/A  N/A   3474124      C   /usr/bin/python3                          79578MiB |
+		|    5   N/A  N/A   1468655      C   /usr/bin/python3                          41472MiB |
+	*/
 	nvml.Init()
 	defer nvml.Shutdown()
 	count, ret := nvml.DeviceGetCount()
 	if ret != nvml.SUCCESS {
 		log.Fatalf("Unable to get device count: %v", nvml.ErrorString(ret))
 	}
+	driverVersion, ret := nvml.SystemGetDriverVersion()
+	if ret != nvml.SUCCESS {
+		log.Fatalf("Unable to get driver version: %v", nvml.ErrorString(ret))
+	}
+	cudaDriverVersion, ret := nvml.SystemGetCudaDriverVersion()
+	if ret != nvml.SUCCESS {
+		log.Fatalf("Unable to get cuda driver version: %v", nvml.ErrorString(ret))
+	}
+	// convert dricudaDriverVersionver version to string
+	cudaVersion := fmt.Sprintf("%d.%d", cudaDriverVersion/1000, (cudaDriverVersion%1000)/10)
 	var gpus []common.GPU
 	for i := 0; i < count; i++ {
-		gpu:=common.GPU{}
+		gpu := common.GPU{}
 		device, ret := nvml.DeviceGetHandleByIndex(i)
 		if ret != nvml.SUCCESS {
 			log.Fatalf("Unable to get device at index %d: %v", i, nvml.ErrorString(ret))
@@ -139,20 +113,52 @@ func run(args []string) error {
 		if ret != nvml.SUCCESS {
 			log.Fatalf("Unable to get uuid of device at index %d: %v", i, nvml.ErrorString(ret))
 		}
-		gpu.UUID=uuid
+		gpu.UUID = uuid
 		minor, ret := device.GetMinorNumber()
 		if ret != nvml.SUCCESS {
 			log.Fatalf("Unable to get minor number of device at index %d: %v", i, nvml.ErrorString(ret))
 		}
-		gpu.Idx=minor
+		gpu.Idx = minor
 		name, ret := device.GetName()
 		if ret != nvml.SUCCESS {
 			log.Fatalf("Unable to get name of device at index %d: %v", i, nvml.ErrorString(ret))
 		}
-		gpu.Name=name
+		gpu.Name = name
+		// get pci bus id
+		pciInfo, ret := device.GetPciInfo()
+		if ret != nvml.SUCCESS {
+			log.Fatalf("Unable to get pci info of device at index %d: %v", i, nvml.ErrorString(ret))
+		}
+		gpu.BusID = busIdToString(pciInfo.BusId)
 		gpus = append(gpus, gpu)
 	}
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.SetTitle(fmt.Sprintf("NVIDIA-SMI 470.129.06           Driver Version: %s          CUDA Version: %s", driverVersion, cudaVersion))
+	t.AppendSeparator()
+	t.AppendRow(table.Row{"GPU  Name        Persistence-M", "Bus-Id        Disp.A", "Volatile Uncorr. ECC"})
+	t.AppendRow(table.Row{"Fan  Temp  Perf  Pwr:Usage/Cap", "        Memory-Usage", "GPU-Util  Compute M."})
+	t.AppendRow(table.Row{"", "", "              MIG M."})
+	t.AppendSeparator()
+	for _, gpu := range gpus {
+		t.AppendRow(table.Row{fmt.Sprintf("%s  %s%s", sizeString(strconv.Itoa(gpu.Idx), 3, true), sizeString(gpu.Name, 21, false), sizeString("Off", 13, true)), fmt.Sprintf("%s %s", sizeString(gpu.BusID, 16, false), sizeString("Off", 3, true)), sizeString("Off", 20, true)})
+		t.AppendRow(table.Row{"N/A   33C    P8    11W /  70W", sizeString(fmt.Sprintf("%dMiB / %dMiB", int(gpu.UsedMem), gpu.TotalMem), 20, true), fmt.Sprintf("%s %s", sizeString(strconv.Itoa(gpu.Util)+"%", 8, true), sizeString("Default", 11, true))})
+	}
+	t.AppendRow(table.Row{"", "", sizeString("N/A", 20, true)})
+	t.AppendSeparator()
+	t.Render()
 
+	fmt.Printf("\n")
+
+	t = table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.AppendRow(table.Row{"Processes:"})
+	t.AppendRow(table.Row{" GPU   GI   CI        PID   Type   Process name                            GPU Memory"})
+	t.AppendRow(table.Row{"       ID   ID                                                             Usage     "})
+	t.AppendSeparator()
+	// t.AppendRow(table.Row{fmt.Sprintf(" %s   %s%s%s%s   %s %s", sizeString(strconv.Itoa(args.GpuIdx), 3, true), sizeString("N/A", 5, false), sizeString("N/A", 10, false), sizeString(strconv.Itoa(os.Getpid()), 6, false), sizeString("G", 4, true), sizeString(args.ProcessName, 29, false), sizeString(fmt.Sprintf("%dMiB", int(args.GpuUsedMem)), 11, true))})
+	t.AppendRow(table.Row{fmt.Sprintf(" %s   %s%s%s%s   %s %s", sizeString(strconv.Itoa(1), 3, true), sizeString("N/A", 5, false), sizeString("N/A", 10, false), sizeString(strconv.Itoa(os.Getpid()), 6, false), sizeString("G", 4, true), sizeString("/usr/local/nginx", 29, false), sizeString(fmt.Sprintf("%dMiB", int(3200)), 20, true))})
+	t.Render()
 	return nil
 }
 
@@ -162,7 +168,7 @@ var RootCmd = &cobra.Command{
 	Short: "nvidia-smi is a command-line utility that provides monitoring and management capabilities for NVIDIA GPUs.",
 	Long:  `nvidia-smi is a command-line utility that provides monitoring and management capabilities for NVIDIA GPUs.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := run(args)
+		err := run()
 		if err != nil {
 			fmt.Println("Error:", err)
 			os.Exit(1)
