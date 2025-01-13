@@ -38,31 +38,27 @@ jobs:
         run: |
           GITREF=${{ github.ref }}
           IMAGE_LOCATION=${{ env.REGISTRY }}/${{ env.REGISTRY_USER }}
+          img=${{ env.REGISTRY_PATH }}
           cd output/
-          for tarball in *.tar; do
-              echo "- Publishing image for tarball $tarball..."
-              docker load -i $tarball
-              img=${tarball#nri-}; img=${img%-image*}
-              sha=${tarball##*-image-}; sha=${sha%.tar}
-              echo "  - image:  $img"
-              echo "  - digest: ${{ env.REGISTRY_USER }}/$sha"
-              echo "  - digging out tag from git ref $GITREF..."
-              case $GITREF in
-                  refs/tags/v*)
-                      tag="${GITREF#refs/tags/}"
-                      ;;
-                  refs/heads/main)
-                      tag=unstable
-                      ;;
-                  refs/heads/release-*)
-                      tag="v${GITREF#refs/heads/release-}-unstable"
-                      ;;
-                  *)
-                      echo "error: can't determine tag."
-                      exit 1
-                      ;;
-              esac
-              echo "  - tag: $tag"
-              docker tag ${{ env.REGISTRY_USER }}/$sha $IMAGE_LOCATION/$img:$tag
-              docker push $IMAGE_LOCATION/$img:$tag
-          done
+          echo "- Publishing image for tarball $img..."
+          docker load -i $img
+          echo "  - image:  $img"
+          echo "  - digging out tag from git ref $GITREF..."
+          case $GITREF in
+              refs/tags/v*)
+                  tag="${GITREF#refs/tags/}"
+                  ;;
+              refs/heads/main)
+                  tag=unstable
+                  ;;
+              refs/heads/release-*)
+                  tag="v${GITREF#refs/heads/release-}-unstable"
+                  ;;
+              *)
+                  echo "error: can't determine tag."
+                  exit 1
+                  ;;
+          esac
+          echo "  - tag: $tag"
+          docker tag ${{ env.REGISTRY_USER }}/$img $IMAGE_LOCATION/$img:$tag
+          docker push $IMAGE_LOCATION/$img:$tag
