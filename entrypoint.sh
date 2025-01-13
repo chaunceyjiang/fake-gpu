@@ -1,5 +1,5 @@
 #!/bin/sh
-echo "make fake gpu device"
+echo "create fake gpu device"
 # count the number of gpu
 gpu_num=`cat /fake-gpu/fake-gpu.yaml |grep cuda_version | wc -l`
 for i in `seq 1 $gpu_num`
@@ -12,7 +12,7 @@ done
 SOURCE_DIR="/fake-gpu/"
 
 # Destination directory from the argument
-DEST_DIR="/etc/fake-gpu"
+DEST_DIR="/etc/fake-gpu/"
 
 
 # Check if the destination directory exists, create it if it doesn't
@@ -50,7 +50,7 @@ find "$SOURCE_DIR" -type f | while read -r source_file; do
         fi
     fi
 done
-if $1; then
-  echo "start fake gpu device"
-  /fake-gpu/device-injector $@
-fi
+
+echo "start fake gpu device"
+echo "param: $@"
+/fake-gpu/device-injector $@
