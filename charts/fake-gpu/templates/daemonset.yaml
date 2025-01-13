@@ -56,6 +56,13 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
+          args:
+            - -idx
+            - {{ .Values.nri.plugin.index | quote}}
+            - -name
+            - {{ .Values.nri.plugin.name }}
+            - -source-path
+            - /fake-gpu/fake-gpu.yaml
           securityContext:
             privileged: true
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"

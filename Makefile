@@ -9,6 +9,11 @@ OUTPUT_DIR := $(WORK_PATH)/output
 BUILD_DIR := $(WORK_PATH)/build
 GO=go
 GO111MODULE=on
+IMAGE_VERSION  ?= $(shell git describe --tags --dirty 2> /dev/null || echo v0.0.0-unknown)
+export IMAGE_VERSION
+IMAGE_NAME ?= fake-gpu
+export IMAGE_NAME
+IMAGE_REPOSITORY ?= chaunceyjiang
 
 # Target: all
 .PHONY: all
@@ -51,9 +56,7 @@ default: all version
 
 .PHONY: docker-build
 docker-build:
-	docker build -t fake-gpu -f Dockerfile .
-	docker run --rm -v $(WORK_PATH):/mnt fake-gpu cp /fake-gpu/output/lib64/libfake_gpu.so /mnt/libfake_gpu.so
-
+	docker build -t $(IMAGE_REPOSITORY)/$(IMAGE_NAME):$(IMAGE_VERSION) -f Dockerfile .
 build-cmd: device-injector nvidia-smi
 
 device-injector:
@@ -61,3 +64,8 @@ device-injector:
 
 nvidia-smi:
 	$(GO) build -o ${OUTPUT_DIR}/bin/nvidia-smi ./cmd/nvidia-smi/main.go
+
+images: docker-build
+	@echo "========== save images =========="
+	@docker save -o $(OUTPUT_DIR)/fake-gpu.tar $(IMAGE_REPOSITORY)/$(IMAGE_NAME):$(IMAGE_VERSION)
+	
