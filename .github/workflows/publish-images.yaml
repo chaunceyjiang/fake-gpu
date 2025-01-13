@@ -63,6 +63,6 @@ jobs:
                       ;;
               esac
               echo "  - tag: $tag"
-              docker tag ${{ env.REGISTRY_USER }}$sha $IMAGE_LOCATION/$img:$tag
+              docker tag ${{ env.REGISTRY_USER }}/$sha $IMAGE_LOCATION/$img:$tag
               docker push $IMAGE_LOCATION/$img:$tag
           done
