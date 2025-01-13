@@ -38,7 +38,7 @@ jobs:
         run: |
           GITREF=${{ github.ref }}
           IMAGE_LOCATION=${{ env.REGISTRY }}/${{ env.REGISTRY_USER }}
-          img=${{ env.REGISTRY_PATH }}
+          img=fake-gpu
           cd output/
           echo "- Publishing image for tarball $img..."
           docker load -i $img.tar
