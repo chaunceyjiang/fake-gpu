@@ -63,6 +63,8 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
+          - name: nrisockets
+            mountPath: /var/run/nri
           - name: host-dev
             mountPath: /host-dev
           - name: config
@@ -81,6 +83,10 @@ spec:
       - name: config
         hostPath:
           path: /usr/local/fake-gpu
+          type: DirectoryOrCreate
+      - name: nrisockets
+        hostPath:
+          path: /var/run/nri
           type: DirectoryOrCreate
       {{- if .Values.nri.runtime.patchConfig }}
       - name: containerd-config

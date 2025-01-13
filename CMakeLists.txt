@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.12)
 
-project (fake_gpu LANGUAGES C CXX)
+project (fakegpu LANGUAGES C CXX)
 
 set (CMAKE_VERBOSE_MAKEFILE ${HOOK_VERBOSE_MAKEFILE})
 
@@ -51,14 +51,14 @@ file (GLOB HOOK_SRCS
     ${PROJECT_SOURCE_DIR}/src/*/*.cpp
 )
 
-# libfake_gpu.so
-add_library (fake_gpu SHARED ${HOOK_SRCS})
-target_link_libraries (fake_gpu PRIVATE yaml-cpp -ldl)
-install (TARGETS fake_gpu LIBRARY DESTINATION lib64)
+# libfakegpu.so
+add_library (fakegpu SHARED ${HOOK_SRCS})
+target_link_libraries (fakegpu PRIVATE yaml-cpp -ldl)
+install (TARGETS fakegpu LIBRARY DESTINATION lib64)
 
-# libfake_gpu.a
-add_library (fake_gpu_static STATIC ${HOOK_SRCS})
-target_link_libraries (fake_gpu_static PRIVATE yaml-cpp -ldl)
-set_target_properties (fake_gpu_static PROPERTIES OUTPUT_NAME fake_gpu)
+# libfakegpu.a
+add_library (fakegpu_static STATIC ${HOOK_SRCS})
+target_link_libraries (fakegpu_static PRIVATE yaml-cpp -ldl)
+set_target_properties (fakegpu_static PROPERTIES OUTPUT_NAME fakegpu)
 
-install (TARGETS fake_gpu_static ARCHIVE DESTINATION lib64)
+install (TARGETS fakegpu_static ARCHIVE DESTINATION lib64)

@@ -7,10 +7,12 @@ VERBOSE_MAKEFILE := OFF # b: (ON, OFF)
 WORK_PATH := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 OUTPUT_DIR := $(WORK_PATH)/output
 BUILD_DIR := $(WORK_PATH)/build
+GO=go
+GO111MODULE=on
 
 # Target: all
 .PHONY: all
-all: build
+all: build build-cmd
 
 # Clean up build and output directories
 .PHONY: clean
@@ -52,3 +54,10 @@ docker-build:
 	docker build -t fake-gpu -f Dockerfile .
 	docker run --rm -v $(WORK_PATH):/mnt fake-gpu cp /fake-gpu/output/lib64/libfake_gpu.so /mnt/libfake_gpu.so
 
+build-cmd: device-injector nvidia-smi
+
+device-injector:
+	$(GO) build -o ${OUTPUT_DIR}/bin/device-injector ./cmd/device-injector/main.go
+
+nvidia-smi:
+	$(GO) build -o ${OUTPUT_DIR}/bin/nvidia-smi ./cmd/nvidia-smi/main.go
