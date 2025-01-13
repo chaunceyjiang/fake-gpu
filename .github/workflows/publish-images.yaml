@@ -37,7 +37,7 @@ jobs:
       - name: Push images
         run: |
           GITREF=${{ github.ref }}
-          IMAGE_LOCATION=${{ env.REGISTRY }}/${{ env.REGISTRY_USER }}/
+          IMAGE_LOCATION=${{ env.REGISTRY }}/${{ env.REGISTRY_USER }}
           cd output/
           for tarball in *.tar; do
               echo "- Publishing image for tarball $tarball..."
