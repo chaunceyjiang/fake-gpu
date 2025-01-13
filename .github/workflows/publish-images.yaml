@@ -63,6 +63,6 @@ jobs:
                       ;;
               esac
               echo "  - tag: $tag"
-              docker tag $sha $IMAGE_LOCATION/nri-$img:$tag
-              docker push $IMAGE_LOCATION/nri-$img:$tag
+              docker tag $sha $IMAGE_LOCATION/$img:$tag
+              docker push $IMAGE_LOCATION/$img:$tag
           done
