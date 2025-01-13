@@ -67,5 +67,5 @@ nvidia-smi:
 
 images: docker-build
 	@echo "========== save images =========="
-	@docker save -o $(OUTPUT_DIR)/fake-gpu.tar $(IMAGE_REPOSITORY)/$(IMAGE_NAME):$(IMAGE_VERSION)
+	@docker save -o fake-gpu.tar $(IMAGE_REPOSITORY)/$(IMAGE_NAME):$(IMAGE_VERSION)
 	
