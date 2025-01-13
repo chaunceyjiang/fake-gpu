@@ -9,7 +9,7 @@ OUTPUT_DIR := $(WORK_PATH)/output
 BUILD_DIR := $(WORK_PATH)/build
 GO=go
 GO111MODULE=on
-IMAGE_VERSION  ?= $(shell git describe --tags --dirty 2> /dev/null || echo v0.0.1)
+IMAGE_VERSION  ?= $(shell git describe --tags --dirty 2> /dev/null || git rev-parse --short HEAD)
 export IMAGE_VERSION
 IMAGE_NAME ?= fake-gpu
 export IMAGE_NAME
