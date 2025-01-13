@@ -114,8 +114,20 @@ func injectMounts(pod *api.PodSandbox, ctr *api.Container, a *api.ContainerAdjus
 			Options:     mountOption,
 		})
 		mounts = append(mounts, mount{
+			Source:      fmt.Sprintf("%s/libfake_gpu.so", sourceHostPath),
+			Destination: "/lib/libcudart.so",
+			Type:        "bind",
+			Options:     mountOption,
+		})
+		mounts = append(mounts, mount{
 			Source:      fmt.Sprintf("%s/nvidia-smi", sourceHostPath),
 			Destination: "/urs/bin/nvidia-smi",
+			Type:        "bind",
+			Options:     mountOption,
+		})
+		mounts = append(mounts, mount{
+			Source:      fmt.Sprintf("%s/fake-gpu.yaml", sourceHostPath),
+			Destination: "/usr/local/fake-gpu/fake-gpu.yaml",
 			Type:        "bind",
 			Options:     mountOption,
 		})
@@ -138,6 +150,17 @@ func injectMounts(pod *api.PodSandbox, ctr *api.Container, a *api.ContainerAdjus
 		}
 	}
 
+	a.AddEnv("FAKE_GPU_CONFIG", "/usr/local/fake-gpu/fake-gpu.yaml")
+	for _, e := range ctr.Mounts {
+		if e.Destination == "/var/lib/kubelet/device-plugins" {
+			a.AddEnv("FAKE_GPU_SUFFIX", "fake-gpu")
+			break
+		}
+		if e.Source == "/var/lib/kubelet/device-plugins" {
+			a.AddEnv("FAKE_GPU_SUFFIX", "fake-gpu")
+			break
+		}
+	}
 	return nil
 }
 

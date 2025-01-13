@@ -12,7 +12,12 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/chaunceyjiang/fake-gpu/pkg/nvidia/common"
+	"github.com/chaunceyjiang/fake-gpu/pkg/nvidia/topo"
 )
+
+func init() {
+	RootCmd.AddCommand(topo.TopoCmd)
+}
 
 func busIdToString(busId [32]int8) string {
 	// 将 int8 数组转换为 byte 数组
@@ -130,6 +135,12 @@ func run() error {
 			log.Fatalf("Unable to get pci info of device at index %d: %v", i, nvml.ErrorString(ret))
 		}
 		gpu.BusID = busIdToString(pciInfo.BusId)
+		mem, ret := device.GetMemoryInfo_v2()
+		if ret != nvml.SUCCESS {
+			log.Fatalf("Unable to get memory info of device at index %d: %v", i, nvml.ErrorString(ret))
+		}
+		gpu.TotalMem = mem.Total
+		gpu.UsedMem = mem.Used
 		gpus = append(gpus, gpu)
 	}
 	t := table.NewWriter()

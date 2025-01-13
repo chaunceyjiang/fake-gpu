@@ -116,13 +116,13 @@ using GPUList = std::vector<GPU>;
 */
 
 GPUList nvidia_gpus;
-char *node_name = NULL;
+char *gpu_suffix = NULL;
 
 // load configuration file
 void init() {
     // read the configuration file path from the environment variable
     const char *config_path = std::getenv("FAKE_GPU_CONFIG");
-    node_name = std::getenv("NODE_NAME");
+    gpu_suffix = std::getenv("FAKE_GPU_SUFFIX");
     if (config_path == nullptr) {
         std::cerr << "Environment variable FAKE_GPU_CONFIG is not set." << std::endl;
         exit(EXIT_FAILURE);
@@ -140,14 +140,39 @@ void init() {
     for (std::vector<GPU>::size_type i = 0; i < nvidia_gpus.size(); i++) {
         nvidia_gpus[i].index = i;
     }
-    // if node_name is set , uuid add node_name
-    if (node_name != NULL) {
+    // if gpu_suffix is set , uuid add gpu_suffix
+    if (gpu_suffix != NULL) {
         for (std::vector<GPU>::size_type i = 0; i < nvidia_gpus.size(); i++) {
-            nvidia_gpus[i].uuid = nvidia_gpus[i].uuid + "-" + node_name;
+            nvidia_gpus[i].uuid = nvidia_gpus[i].uuid + "-" + gpu_suffix;
         }
     }
+    const char *envValue = std::getenv("NVIDIA_VISIBLE_DEVICES");
+    if ((envValue != NULL) && strcmp(envValue, "all") == 0) {
+        HLOG("NVIDIA_VISIBLE_DEVICES is set to all");
+    } else if ((envValue != NULL) && strcmp(envValue, "void") != 0) {
+        HLOG("NVIDIA_VISIBLE_DEVICES is set to %s", envValue);
+        std::string visibleDevices(envValue);
+        std::vector<std::string> visibleDevicesList;
+        std::string::size_type pos = 0;
+        std::string::size_type prev = 0;
+        while ((pos = visibleDevices.find(",", prev)) != std::string::npos) {
+            visibleDevicesList.push_back(visibleDevices.substr(prev, pos - prev));
+            prev = pos + 1;
+        }
+        visibleDevicesList.push_back(visibleDevices.substr(prev));
+        GPUList newGpus;
+        for (std::vector<GPU>::size_type i = 0; i < nvidia_gpus.size(); i++) {
+            for (std::vector<std::string>::size_type j = 0; j < visibleDevicesList.size(); j++) {
+                if (nvidia_gpus[i].uuid == visibleDevicesList[j]) {
+                    newGpus.push_back(nvidia_gpus[i]);
+                    break;
+                }
+            }
+        }
+        nvidia_gpus = newGpus;
+    }
     HLOG("Fake GPU initialized");
-    HLOG("Node name: %s", node_name);
+    HLOG("FAKE_GPU_SUFFIX : %s", gpu_suffix);
     HLOG("Number of NVIDIA GPUs: %ld", nvidia_gpus.size());
 }
 

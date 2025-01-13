@@ -3,9 +3,9 @@ package common
 type GPU struct {
 	Product       string
 	UUID          string
-	UsedMem       float32
+	UsedMem       uint64
 	BusID         string
-	TotalMem      int
+	TotalMem      uint64
 	Util          int
 	Idx           int
 	Name          string
