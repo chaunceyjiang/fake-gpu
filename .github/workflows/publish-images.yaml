@@ -37,7 +37,7 @@ jobs:
       - name: Push images
         run: |
           GITREF=${{ github.ref }}
-          IMAGE_LOCATION=${{ env.REGISTRY }}/${{ env.REGISTRY_PATH }}
+          IMAGE_LOCATION=${{ env.REGISTRY }}/${{ env.REGISTRY_USER }}/
           cd output/
           for tarball in *.tar; do
               echo "- Publishing image for tarball $tarball..."
@@ -45,7 +45,7 @@ jobs:
               img=${tarball#nri-}; img=${img%-image*}
               sha=${tarball##*-image-}; sha=${sha%.tar}
               echo "  - image:  $img"
-              echo "  - digest: $sha"
+              echo "  - digest: ${{ env.REGISTRY_USER }}/$sha"
               echo "  - digging out tag from git ref $GITREF..."
               case $GITREF in
                   refs/tags/v*)
@@ -63,6 +63,6 @@ jobs:
                       ;;
               esac
               echo "  - tag: $tag"
-              docker tag $sha $IMAGE_LOCATION/$img:$tag
+              docker tag ${{ env.REGISTRY_USER }}$sha $IMAGE_LOCATION/$img:$tag
               docker push $IMAGE_LOCATION/$img:$tag
           done
