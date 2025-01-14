@@ -9,7 +9,7 @@ on:
       - release-*
 
 env:
-  CHARTS_DIR: charts/fake-gpu/
+  CHARTS_DIR: charts/fake-gpu
   UNSTABLE_CHARTS: unstable-helm-charts
   REGISTRY: ghcr.io
   REGISTRY_USER: ${{ github.repository_owner }}
