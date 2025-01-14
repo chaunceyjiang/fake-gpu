@@ -89,15 +89,15 @@ jobs:
           echo "CHART_VERSION=${CHART_VERSION}"
           echo "APP_VERSION=${APP_VERSION}"
           echo "package..."
-          ls -l "$CHARTS_DIR"
-          echo $PWD
           helm package --version "$CHART_VERSION" --app-version $APP_VERSION "$CHARTS_DIR"/*
+          echo "package done"
           find "$CHARTS_DIR" -name values.yaml | xargs -I '{}' \
               git checkout '{}'
-          mkdir ../$UNSTABLE_CHARTS
+          mkdir $UNSTABLE_CHARTS
+          echo "move..."
           find . -name '*.tgz' -print | while read SRC_FILE; do
             DEST_FILE=$(echo $SRC_FILE | sed 's/v/helm-chart-v/g')
-            mv -v $SRC_FILE ../$UNSTABLE_CHARTS/$DEST_FILE
+            mv -v $SRC_FILE $UNSTABLE_CHARTS/$DEST_FILE
           done
 
       - name: Log In To Registry
@@ -112,7 +112,7 @@ jobs:
           #   Currently we only publish unstable Helm charts from main/HEAD.
           #   We have no active cleanup of old unstable charts in place. In
           #   between new tags unstable chart have the same version, though.
-          pushd ../$UNSTABLE_CHARTS
+          pushd $UNSTABLE_CHARTS
           for i in ./*.tgz; do
               helm push $i oci://${{ env.REGISTRY }}/${{ env.REGISTRY_PATH }}/helm-charts
           done
