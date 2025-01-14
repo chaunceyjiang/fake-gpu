@@ -102,26 +102,26 @@ func injectMounts(pod *api.PodSandbox, ctr *api.Container, a *api.ContainerAdjus
 	}
 	if injectGPU != injectGPUTypeNone {
 		mounts = append(mounts, mount{
-			Source:      fmt.Sprintf("%s/libfake_gpu.so", sourceHostPath),
+			Source:      fmt.Sprintf("%s/libfakegpu.so", sourceHostPath),
 			Destination: "/lib/libnvidia-ml.so.1",
 			Type:        "bind",
 			Options:     mountOption,
 		})
 		mounts = append(mounts, mount{
-			Source:      fmt.Sprintf("%s/libfake_gpu.so", sourceHostPath),
+			Source:      fmt.Sprintf("%s/libfakegpu.so", sourceHostPath),
 			Destination: "/lib/libcuda.so.1",
 			Type:        "bind",
 			Options:     mountOption,
 		})
 		mounts = append(mounts, mount{
-			Source:      fmt.Sprintf("%s/libfake_gpu.so", sourceHostPath),
+			Source:      fmt.Sprintf("%s/libfakegpu.so", sourceHostPath),
 			Destination: "/lib/libcudart.so",
 			Type:        "bind",
 			Options:     mountOption,
 		})
 		mounts = append(mounts, mount{
 			Source:      fmt.Sprintf("%s/nvidia-smi", sourceHostPath),
-			Destination: "/urs/bin/nvidia-smi",
+			Destination: "/usr/bin/nvidia-smi",
 			Type:        "bind",
 			Options:     mountOption,
 		})

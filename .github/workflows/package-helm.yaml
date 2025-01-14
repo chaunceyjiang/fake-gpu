@@ -30,6 +30,9 @@ jobs:
 
       - name: Package Stable Helm Charts
         run: |
+          echo "CHARTS_DIR=${CHARTS_DIR}"
+          echo "GITHUB_REF_NAME=${GITHUB_REF_NAME}"
+          # Package charts
           find "$CHARTS_DIR" -name values.yaml | xargs -I '{}' \
               sed -e s"/pullPolicy:.*/pullPolicy: IfNotPresent/" -i '{}'
           helm package --version "$GITHUB_REF_NAME" --app-version "$GITHUB_REF_NAME" "$CHARTS_DIR"/*
