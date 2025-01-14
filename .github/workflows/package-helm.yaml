@@ -73,6 +73,10 @@ jobs:
           #   - chart version: x.y-unstable derived from the latest tag x.y.z
           #   - image version: 'unstable'.
           majmin="$(git describe --tags | sed -E 's/(v[0-9]*\.[0-9]*).*$/\1/')"
+          echo "CHARTS_DIR=${CHARTS_DIR}"
+          echo "GITHUB_REF_NAME=${GITHUB_REF_NAME}"
+          echo "majmin=${majmin}"
+          # Package charts
           CHART_VERSION="${majmin}-unstable"
           if [  $GITHUB_REF_NAME = "main" ]; then
               APP_VERSION=unstable
