@@ -50,7 +50,8 @@ find "$SOURCE_DIR" -type f | while read -r source_file; do
         fi
     fi
 done
-
+# get env NODE_NAME
+NODE_NAME=${NODE_NAME:-"fake-gpu"}
 echo "start fake gpu device"
-echo "param: $@"
-/fake-gpu/device-injector $@
+echo "params: -gpu-uuid-suffix $NODE_NAME $@"
+/fake-gpu/device-injector -gpu-uuid-suffix $NODE_NAME $@

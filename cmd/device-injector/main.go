@@ -17,6 +17,7 @@ var (
 	log            *logrus.Logger
 	verbose        bool
 	sourceHostPath string
+	gpusuffix      string
 	mountOption    = []string{"rbind", "ro", "rprivate"}
 )
 
@@ -153,11 +154,11 @@ func injectMounts(pod *api.PodSandbox, ctr *api.Container, a *api.ContainerAdjus
 	a.AddEnv("FAKE_GPU_CONFIG", "/usr/local/fake-gpu/fake-gpu.yaml")
 	for _, e := range ctr.Mounts {
 		if e.Destination == "/var/lib/kubelet/device-plugins" {
-			a.AddEnv("FAKE_GPU_SUFFIX", "fake-gpu")
+			a.AddEnv("FAKE_GPU_SUFFIX", gpusuffix)
 			break
 		}
 		if e.Source == "/var/lib/kubelet/device-plugins" {
-			a.AddEnv("FAKE_GPU_SUFFIX", "fake-gpu")
+			a.AddEnv("FAKE_GPU_SUFFIX", gpusuffix)
 			break
 		}
 	}
@@ -234,6 +235,7 @@ func main() {
 	flag.StringVar(&pluginIdx, "idx", "", "plugin index to register to NRI")
 	flag.BoolVar(&verbose, "verbose", false, "enable (more) verbose logging")
 	flag.StringVar(&sourceHostPath, "source-path", "/usr/local/fake-gpu", "source host path for mounts")
+	flag.StringVar(&gpusuffix, "gpu-uuid-suffix", "fake-gpu", "gpu uuid suffix for fake gpu")
 	flag.Parse()
 
 	if pluginName != "" {

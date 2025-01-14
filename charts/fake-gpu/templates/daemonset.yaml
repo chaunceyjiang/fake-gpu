@@ -56,6 +56,11 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
+          env:
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
           command:
             - /fake-gpu/entrypoint.sh
             - -idx
