@@ -86,6 +86,9 @@ jobs:
           # Package charts
           find "$CHARTS_DIR" -name values.yaml | xargs -I '{}' \
               sed -e s"/pullPolicy:.*/pullPolicy: Always/" -i '{}'
+          echo "CHART_VERSION=${CHART_VERSION}"
+          echo "APP_VERSION=${APP_VERSION}"
+          echo "package..."
           helm package --version "$CHART_VERSION" --app-version $APP_VERSION "$CHARTS_DIR"/*
           find "$CHARTS_DIR" -name values.yaml | xargs -I '{}' \
               git checkout '{}'
