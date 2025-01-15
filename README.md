@@ -36,11 +36,11 @@ helm install hami hami-charts/hami  -n kube-system
 ### Deploy the fake GPU 
 1. Download the latest release of the fake GPU.
 ``` shell
-wget https://github.com/chaunceyjiang/fake-gpu/releases/download/v0.2.0/fake-gpu-helm-chart-v0.2.0.tgz
+wget https://github.com/chaunceyjiang/fake-gpu/releases/download/v0.3.0/fake-gpu-helm-chart-v0.3.0.tgz
 ```
 2. Deploy the fake GPU to your Kubernetes cluster.
 ``` shell
-helm install fake-gpu fake-gpu-helm-chart-v0.2.0.tgz
+helm install fake-gpu fake-gpu-helm-chart-v0.3.0.tgz
 ```
 3. Configure your application to use the GPU.
 ``` shell 
