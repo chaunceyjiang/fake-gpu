@@ -6,6 +6,7 @@ The `fake-gpu` project is designed to simulate GPU information, making it easier
 
 ## Features
 - Simulates GPU information
+- Unable to Perform Genuine CUDA Computation
 - Test GPU-related functions without GPU hardware.
 - Non-intrusive, no need to modify application code.
 - Supports CUDA Driver, CUDA Runtime, NVML API
