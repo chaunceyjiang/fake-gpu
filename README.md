@@ -4,9 +4,33 @@
 
 The `fake-gpu` project is designed to simulate GPU information, making it easier to test scenarios where a GPU is not available. This can be particularly useful for development and testing purposes in environments that lack physical GPU hardware.
 
+## Features
+- Simulates GPU information
+- Test GPU-related functions without GPU hardware.
+- Non-intrusive, no need to modify application code.
+- Supports CUDA Driver, CUDA Runtime, NVML API
+- Supports nvidia-smi
+
+## Requirements
+- containerd >= 1.7.0
+
 ## Usage
 
 To use the fake GPU, follow these steps:
+You should have a Kubernetes cluster running with containerd as the container runtime.
+You should have already deployed [nvidia-device-plugin](https://github.com/NVIDIA/k8s-device-plugin) or [HAMi](https://github.com/Project-HAMi/HAMi).
+
+### Option 1: Deploy the [nvidia-device-plugin](https://github.com/NVIDIA/k8s-device-plugin)
+``` shell
+ kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.0/deployments/static/nvidia-device-plugin.yml
+```
+### Option 2: Deploy the [HAMi](https://github.com/Project-HAMi/HAMi)
+``` shell
+helm repo add hami-charts https://project-hami.github.io/HAMi/
+helm install hami hami-charts/hami  -n kube-system
+
+### Deploy the fake GPU
+```
 1. Download the latest release of the fake GPU.
 ``` shell
 wget https://github.com/chaunceyjiang/fake-gpu/releases/download/<VERSION>fake-gpu-helm-chart-v0.2.0.tgz
