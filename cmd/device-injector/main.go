@@ -73,6 +73,7 @@ func findEnvWithName(name string, env []string) bool {
 func findEnvWithNameAndValue(name string, env []string) (string, bool) {
 	for _, e := range env {
 		if strings.HasPrefix(e, name+"=") {
+			e = strings.TrimPrefix(e, name+"=")
 			return e, true
 		}
 	}
@@ -82,12 +83,8 @@ func findEnvWithNameAndValue(name string, env []string) (string, bool) {
 func injectMounts(pod *api.PodSandbox, ctr *api.Container, a *api.ContainerAdjustment) error {
 	var mounts []mount
 	injectGPU := injectGPUTypeNone
+	visibleAllDevice := false
 	switch {
-	case findEnvWithName("CUDA_DEVICE_MEMORY_SHARED_CACHE", ctr.Env):
-		injectGPU = injectGPUTypevGPU
-		if verbose {
-			log.Infof("%s: injecting vGPU...", containerName(pod, ctr))
-		}
 	case findEnvWithName("NVIDIA_VISIBLE_DEVICES", ctr.Env):
 		if env, ok := findEnvWithNameAndValue("NVIDIA_VISIBLE_DEVICES", ctr.Env); ok && env != "void" {
 			injectGPU = injectGPUTypeGPU
@@ -95,8 +92,12 @@ func injectMounts(pod *api.PodSandbox, ctr *api.Container, a *api.ContainerAdjus
 				log.Infof("%s: injecting GPU...", containerName(pod, ctr))
 			}
 		}
+		if env, ok := findEnvWithNameAndValue("NVIDIA_VISIBLE_DEVICES", ctr.Env); ok && env == "all" {
+			visibleAllDevice = true
+		}
 	case findEnvWithName("NVIDIA_REQUIRE_CUDA", ctr.Env) && findEnvWithName("CUDA_VERSION", ctr.Env):
 		injectGPU = injectGPUTypeGPU
+		visibleAllDevice = true
 		if verbose {
 			log.Infof("%s: injecting GPU...", containerName(pod, ctr))
 		}
@@ -152,14 +153,15 @@ func injectMounts(pod *api.PodSandbox, ctr *api.Container, a *api.ContainerAdjus
 	}
 
 	a.AddEnv("FAKE_GPU_CONFIG", "/usr/local/fake-gpu/fake-gpu.yaml")
-	for _, e := range ctr.Mounts {
-		if e.Destination == "/var/lib/kubelet/device-plugins" {
-			a.AddEnv("FAKE_GPU_SUFFIX", gpusuffix)
-			break
-		}
-		if e.Source == "/var/lib/kubelet/device-plugins" {
-			a.AddEnv("FAKE_GPU_SUFFIX", gpusuffix)
-			break
+	if visibleAllDevice {
+		a.AddEnv("FAKE_GPU_SUFFIX", gpusuffix)
+	}
+	if !verbose {
+		log.Infof("%s: injected env %q -> %q...", containerName(pod, ctr),
+			"FAKE_GPU_CONFIG", "/usr/local/fake-gpu/fake-gpu.yaml")
+		if visibleAllDevice {
+			log.Infof("%s: injected env %q -> %q...", containerName(pod, ctr),
+				"FAKE_GPU_SUFFIX", gpusuffix)
 		}
 	}
 	return nil

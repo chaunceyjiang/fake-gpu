@@ -29,8 +29,10 @@ private:
 
 #ifdef HOOK_BUILD_DEBUG
 #define HOOK_TRACE_PROFILE(name) TraceProfile _tp_##name_(name)
+#define HLOG_DEBUG(...) HLOG(__VA_ARGS__)
 #else
 #define HOOK_TRACE_PROFILE(name)
+#define HLOG_DEBUG(...)
 #endif
 
 #endif  // __CUDA_HOOK_TRACE_PROFILE_H__

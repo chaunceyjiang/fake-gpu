@@ -134,7 +134,7 @@ void init() {
         gpu_node >> gpu;  // parse the GPU node
         nvidia_gpus.push_back(gpu);
         // print the GPU information
-        HLOG("GPU Name: %s, UUID: %s", gpu.name.c_str(), gpu.uuid.c_str());
+        HLOG_DEBUG("GPU Name: %s, UUID: %s", gpu.name.c_str(), gpu.uuid.c_str());
     }
     // for each GPU, set the index
     for (std::vector<GPU>::size_type i = 0; i < nvidia_gpus.size(); i++) {
@@ -148,9 +148,9 @@ void init() {
     }
     const char *envValue = std::getenv("NVIDIA_VISIBLE_DEVICES");
     if ((envValue != NULL) && strcmp(envValue, "all") == 0) {
-        HLOG("NVIDIA_VISIBLE_DEVICES is set to all");
+        HLOG_DEBUG("NVIDIA_VISIBLE_DEVICES is set to all");
     } else if ((envValue != NULL) && strcmp(envValue, "void") != 0) {
-        HLOG("NVIDIA_VISIBLE_DEVICES is set to %s", envValue);
+        HLOG_DEBUG("NVIDIA_VISIBLE_DEVICES is set to %s", envValue);
         std::string visibleDevices(envValue);
         std::vector<std::string> visibleDevicesList;
         std::string::size_type pos = 0;
@@ -171,9 +171,9 @@ void init() {
         }
         nvidia_gpus = newGpus;
     }
-    HLOG("Fake GPU initialized");
-    HLOG("FAKE_GPU_SUFFIX : %s", gpu_suffix);
-    HLOG("Number of NVIDIA GPUs: %ld", nvidia_gpus.size());
+    HLOG_DEBUG("Fake GPU initialized");
+    HLOG_DEBUG("FAKE_GPU_SUFFIX : %s", gpu_suffix);
+    HLOG_DEBUG("Number of NVIDIA GPUs: %ld", nvidia_gpus.size());
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlInit_v2() {
@@ -1249,7 +1249,7 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetSupportedEventTypes(nvmlDe
     HOOK_TRACE_PROFILE("nvmlDeviceGetSupportedEventTypes");
     GPU *gpu = reinterpret_cast<GPU *>(device);
     *eventTypes = 415;
-    HLOG("SupportedEventTypes: %s %llu", gpu->uuid.c_str(), *eventTypes);
+    HLOG_DEBUG("SupportedEventTypes: %s %llu", gpu->uuid.c_str(), *eventTypes);
     return NVML_SUCCESS;
 }
 
@@ -1258,7 +1258,7 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlEventSetWait_v2(nvmlEventSet_t set,
     HOOK_TRACE_PROFILE("nvmlEventSetWait_v2");
     EventSet *s = reinterpret_cast<EventSet *>(set);
     if (s->events.size() == 0) {
-        HLOG("EventSetWait_v2: no events");
+        HLOG_DEBUG("EventSetWait_v2: no events");
         return NVML_ERROR_TIMEOUT;
     }
     std::random_device rd;
@@ -1276,11 +1276,11 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlEventSetWait_v2(nvmlEventSet_t set,
         data->eventType = event.type;
         data->eventData = event.data;
         data->device = reinterpret_cast<nvmlDevice_t>(s->device_map[it->first]);
-        HLOG("EventSetWait_v2: %s %d", it->first.c_str(), event.type);
-        HLOG("EventSetWait_v2: %s %d", it->first.c_str(), event.data);
+        HLOG_DEBUG("EventSetWait_v2: %s %d", it->first.c_str(), event.type);
+        HLOG_DEBUG("EventSetWait_v2: %s %d", it->first.c_str(), event.data);
         return NVML_SUCCESS;
     }
-    HLOG("EventSetWait_v2: timeout");
+    HLOG_DEBUG("EventSetWait_v2: timeout");
     return NVML_ERROR_TIMEOUT;
 }
 

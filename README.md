@@ -8,18 +8,44 @@ The `fake-gpu` project is designed to simulate GPU information, making it easier
 
 To use the fake GPU, follow these steps:
 
-1. Build the project (see the Compilation section below).
-2. Set the environment variable `sourceHostPath` to the path where the fake GPU library is located.
-3. Run your application with the fake GPU library.
+1. Deploy the fake GPU to your Kubernetes cluster.
+``` shell
+helm template charts/fake-gpu --set imag.repository=chaunceyjiang/fake-gpu  --set image.tag=v1.0.0 --set nri.runtime.patchConfig=false > install.yaml
+kubectl apply -f install.yaml
+```
+2. Configure your application to use the GPU.
+``` shell 
+cat <<EOF > fake-gpu.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fake-gpu
+spec:
+   containers:
+   - name: fake-gpu
+      image: nginx
+      resources:
+         limits:
+         nvidia.com/gpu: 1
+EOF
+kubectl apply -f fake-gpu.yaml
+```
+3. Run your application as you would with a real GPU.
+``` shell
+kubectl exec -it fake-gpu -- nvidia-smi
 
+```
+
+kube
 ## Compilation
 
 To compile the project, follow these steps:
 
-1. Ensure you have the necessary dependencies installed (e.g., CMake, Git).
-2. Clone the repository: `git clone https://github.com/chaunceyjiang/fake-gpu.git`
-3. Navigate to the project directory: `cd fake-gpu`
-4. Run the build process: `make`
+``` shell
+make docker-build IMAGE_VERSION=v1.0.0
+helm template charts/fake-gpu --set imag.repository=chaunceyjiang/fake-gpu  --set image.tag=v1.0.0 --set nri.runtime.patchConfig=false > install.yaml
+kubectl apply -f install.yaml
+```
 
 ## Contributing
 

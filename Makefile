@@ -56,7 +56,7 @@ default: all version
 
 .PHONY: docker-build
 docker-build:
-	docker build -t $(IMAGE_REPOSITORY)/$(IMAGE_NAME):$(IMAGE_VERSION) -f Dockerfile .
+	docker build --build-arg BUILD_TYPE=$(BUILD_TYPE) -t $(IMAGE_REPOSITORY)/$(IMAGE_NAME):$(IMAGE_VERSION) -f Dockerfile .
 build-cmd: device-injector nvidia-smi
 
 device-injector:

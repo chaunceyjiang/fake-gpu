@@ -2,6 +2,7 @@ FROM ubuntu:22.04 AS build
 WORKDIR /fake-gpu
 COPY . .
 ENV DEBIAN_FRONTEND=noninteractive
+ARG BUILD_TYPE
 RUN sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
 RUN sed -i 's/security.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
 # Update the package list and install essential tools
@@ -11,7 +12,7 @@ RUN apt-get update && apt-get install -y \
     ninja-build \
     git \
     wget
-RUN make build
+RUN make build BUILD_TYPE=${BUILD_TYPE}
 
 FROM golang:1.22.5-bullseye AS gobuild
 WORKDIR /go/src/github.com/chaunceyjiang/fake-gpu
