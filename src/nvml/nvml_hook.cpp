@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <iostream>
+#include <mutex>
 #include <random>
 #include <thread>
 
@@ -11,118 +12,21 @@
 #include "nvml_subset.h"
 #include "trace_profile.h"
 
-/*
-
-// PCI struct
-struct PCI {
-    std::string bus_id;
-    int device_id;
-    int domain_id;
-    int sub_system_id;
-    friend void operator>>(const YAML::Node &node, PCI &pci) {
-        pci.bus_id = node["bus_id"].as<std::string>();
-        pci.device_id = node["device_id"].as<int>();
-        pci.domain_id = node["domain_id"].as<int>();
-        pci.sub_system_id = node["sub_system_id"].as<int>();
-    }
-};
-
-// NVLink struct
-struct NVLink {
-    std::string version;
-    int capacity;
-    int bandwidth;
-    std::vector<std::string> peer_gpus;  // Peer GPU UUID
-    friend void operator>>(const YAML::Node &node, NVLink &nvlink) {
-        nvlink.version = node["version"].as<std::string>();
-        nvlink.capacity = node["capacity"].as<int>();
-        nvlink.bandwidth = node["bandwidth"].as<int>();
-        // if peer_gpu is not empty, strore all peer GPU UUIDs to peer_gpus
-        if (node["peer_gpu"]) {
-            for (const auto &peer_gpu_node : node["peer_gpu"]) {
-                nvlink.peer_gpus.push_back(peer_gpu_node.as<std::string>());
-            }
-        }
-    }
-};
-struct MIG {
-    bool enabled;
-
-    friend void operator>>(const YAML::Node &node, MIG &mig) {
-        mig.enabled = node["enabled"].as<bool>();
-    }
-};
-
-struct Event {
-    int type;
-    int data;
-    friend void operator>>(const YAML::Node &node, Event &event) {
-        event.type = node["type"].as<int>();
-        event.data = node["data"].as<int>();
-    }
-};
-
-using EventList = std::vector<Event>;
-
-struct EventSet {
-    // define the event set
-    // key is GPU UUID, value is a list of events
-    std::map<std::string, EventList> events;
-    // key is GPU UUID, value is the index of the next event
-    std::map<std::string, int> next_event;
-};
-
-// GPU struct
-struct GPU {
-    std::string name;
-    int index;
-    std::string uuid;
-    std::string driver_version;
-    int ram;  // RAM size
-    std::string ram_unit;
-    std::string brand;
-    int cuda_version;
-    int cuda_cores;
-    PCI pci;
-    NVLink nvlink;
-    MIG mig;
-    EventList events;
-    friend void operator>>(const YAML::Node &node, GPU &gpu) {
-        gpu.name = node["name"].as<std::string>();
-        gpu.uuid = node["uuid"].as<std::string>();
-        gpu.driver_version = node["driver_version"].as<std::string>();
-        gpu.ram = node["ram"].as<int>();
-        gpu.ram_unit = node["ram_unit"].as<std::string>();
-        gpu.brand = node["brand"].as<std::string>();
-        gpu.cuda_version = node["cuda_version"].as<int>();
-        gpu.cuda_cores = node["cuda_cores"].as<int>();
-        node["pci"] >> gpu.pci;
-        node["nvlink"] >> gpu.nvlink;
-        node["mig"] >> gpu.mig;
-        // if events is not empty, strore all events to events
-        if (node["events"]) {
-            for (const auto &event_node : node["events"]) {
-                Event event;
-                event_node >> event;
-                gpu.events.push_back(event);
-            }
-        }
-    }
-};
-
-// strore all GPUs
-using GPUList = std::vector<GPU>;
-
-*/
+std::mutex global_mutex;
 
 GPUList nvidia_gpus;
-char *gpu_suffix = NULL;
 
 // load configuration file
 void init() {
+    std::lock_guard<std::mutex> lock(global_mutex);
+    if (!nvidia_gpus.empty()) {
+        return;
+    }
+    char *gpu_suffix = NULL;
     // read the configuration file path from the environment variable
     const char *config_path = std::getenv("FAKE_GPU_CONFIG");
     gpu_suffix = std::getenv("FAKE_GPU_SUFFIX");
+    HLOG_DEBUG("FAKE_GPU_SUFFIX : %s", gpu_suffix);
     if (config_path == nullptr) {
         std::cerr << "Environment variable FAKE_GPU_CONFIG is not set." << std::endl;
         exit(EXIT_FAILURE);
@@ -139,13 +43,13 @@ void init() {
     // for each GPU, set the index
     for (std::vector<GPU>::size_type i = 0; i < nvidia_gpus.size(); i++) {
         nvidia_gpus[i].index = i;
-    }
-    // if gpu_suffix is set , uuid add gpu_suffix
-    if (gpu_suffix != NULL) {
-        for (std::vector<GPU>::size_type i = 0; i < nvidia_gpus.size(); i++) {
+        // if gpu_suffix is set , uuid add gpu_suffix
+        if (gpu_suffix != NULL) {
             nvidia_gpus[i].uuid = nvidia_gpus[i].uuid + "-" + gpu_suffix;
+            HLOG_DEBUG("GPU Name: %s, UUID with suffix: %s", nvidia_gpus[i].name.c_str(), nvidia_gpus[i].uuid.c_str());
         }
     }
+
     const char *envValue = std::getenv("NVIDIA_VISIBLE_DEVICES");
     if ((envValue != NULL) && strcmp(envValue, "all") == 0) {
         HLOG_DEBUG("NVIDIA_VISIBLE_DEVICES is set to all");
@@ -164,6 +68,8 @@ void init() {
         for (std::vector<GPU>::size_type i = 0; i < nvidia_gpus.size(); i++) {
             for (std::vector<std::string>::size_type j = 0; j < visibleDevicesList.size(); j++) {
                 if (nvidia_gpus[i].uuid == visibleDevicesList[j]) {
+                    HLOG_DEBUG("Visible GPU Name: %s, UUID: %s", nvidia_gpus[i].name.c_str(),
+                               nvidia_gpus[i].uuid.c_str());
                     newGpus.push_back(nvidia_gpus[i]);
                     break;
                 }
@@ -172,7 +78,6 @@ void init() {
         nvidia_gpus = newGpus;
     }
     HLOG_DEBUG("Fake GPU initialized");
-    HLOG_DEBUG("FAKE_GPU_SUFFIX : %s", gpu_suffix);
     HLOG_DEBUG("Number of NVIDIA GPUs: %ld", nvidia_gpus.size());
 }
 
@@ -357,6 +262,7 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetHandleByIndex_v2(unsigned 
         return NVML_ERROR_NOT_FOUND;
     }
     *device = reinterpret_cast<nvmlDevice_t>(&nvidia_gpus[index]);
+    HLOG_DEBUG("GPU Name: %s, UUID: %s", nvidia_gpus[index].name.c_str(), nvidia_gpus[index].uuid.c_str());
     return NVML_SUCCESS;
 }
 
@@ -372,6 +278,7 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetHandleByUUID(const char *u
     }
     for (std::vector<GPU>::size_type i = 0; i < nvidia_gpus.size(); i++) {
         if (nvidia_gpus[i].uuid == uuid) {
+            HLOG_DEBUG("GPU Name: %s, UUID: %s", nvidia_gpus[i].name.c_str(), nvidia_gpus[i].uuid.c_str());
             *device = reinterpret_cast<nvmlDevice_t>(&nvidia_gpus[i]);
             return NVML_SUCCESS;
         }
@@ -499,6 +406,7 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetUUID(nvmlDevice_t device, 
     // convert nvmlDevice_t to GPU object
     GPU *gpu = reinterpret_cast<GPU *>(device);
     gpu->uuid.copy(uuid, length);
+    HLOG_DEBUG("GPU UUID: %s", uuid);
     return NVML_SUCCESS;
 }
 

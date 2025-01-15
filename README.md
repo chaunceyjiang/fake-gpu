@@ -23,9 +23,9 @@ metadata:
 spec:
    containers:
    - name: fake-gpu
-      image: nginx
-      resources:
-         limits:
+     image: nginx
+     resources:
+       limits:
          nvidia.com/gpu: 1
 EOF
 kubectl apply -f fake-gpu.yaml
@@ -33,17 +33,35 @@ kubectl apply -f fake-gpu.yaml
 3. Run your application as you would with a real GPU.
 ``` shell
 kubectl exec -it fake-gpu -- nvidia-smi
++---------------------------------------------------------------------------------------+
+| NVIDIA-SMI 470.129.06           Driver Version: 440.33.01          CUDA Version: 12.2 |
++-----------------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M          | Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap          |         Memory-Usage | GPU-Util  Compute M. |
+|                                         |                      |               MIG M. |
++-----------------------------------------+----------------------+----------------------+
+|   1  NVIDIA Tesla P4                Off |                  Off |                  Off |
+| N/A   33C    P8    11W /  70W           |      0MiB / 15411MiB |       0%     Default |
+|                                         |                      |                  N/A |
++-----------------------------------------+----------------------+----------------------+
 
++---------------------------------------------------------------------------------------+
+| Processes:                                                                            |
+|  GPU   GI   CI        PID   Type   Process name                            GPU Memory |
+|        ID   ID                                                             Usage      |
++---------------------------------------------------------------------------------------+
+|    1   N/A  N/A       19       G   /usr/local/nginx                           3200MiB |
++---------------------------------------------------------------------------------------+
 ```
 
-kube
+
 ## Compilation
 
 To compile the project, follow these steps:
 
 ``` shell
-make docker-build IMAGE_VERSION=v1.0.0
-helm template charts/fake-gpu --set imag.repository=chaunceyjiang/fake-gpu  --set image.tag=v1.0.0 --set nri.runtime.patchConfig=false > install.yaml
+make docker-build IMAGE_VERSION=v0.2.0
+helm template charts/fake-gpu --set imag.repository=chaunceyjiang/fake-gpu  --set image.tag=v0.2.0 --set nri.runtime.patchConfig=false > install.yaml
 kubectl apply -f install.yaml
 ```
 

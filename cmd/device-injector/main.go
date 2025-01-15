@@ -153,7 +153,7 @@ func injectMounts(pod *api.PodSandbox, ctr *api.Container, a *api.ContainerAdjus
 	}
 
 	a.AddEnv("FAKE_GPU_CONFIG", "/usr/local/fake-gpu/fake-gpu.yaml")
-	if visibleAllDevice {
+	if len(gpusuffix) > 0 {
 		a.AddEnv("FAKE_GPU_SUFFIX", gpusuffix)
 	}
 	if !verbose {
@@ -237,7 +237,7 @@ func main() {
 	flag.StringVar(&pluginIdx, "idx", "", "plugin index to register to NRI")
 	flag.BoolVar(&verbose, "verbose", false, "enable (more) verbose logging")
 	flag.StringVar(&sourceHostPath, "source-path", "/usr/local/fake-gpu", "source host path for mounts")
-	flag.StringVar(&gpusuffix, "gpu-uuid-suffix", "fake-gpu", "gpu uuid suffix for fake gpu")
+	flag.StringVar(&gpusuffix, "gpu-uuid-suffix", "", "gpu uuid suffix for fake gpu")
 	flag.Parse()
 
 	if pluginName != "" {

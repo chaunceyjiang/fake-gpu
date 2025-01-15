@@ -68,7 +68,7 @@ spec:
             - -name
             - {{ .Values.nri.plugin.name }}
             - -source-path
-            - /fake-gpu/fake-gpu.yaml
+            - /usr/local/fake-gpu
           securityContext:
             privileged: true
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
