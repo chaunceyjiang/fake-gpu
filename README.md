@@ -43,20 +43,19 @@ helm install fake-gpu fake-gpu-helm-chart-v0.2.0.tgz
 ```
 3. Configure your application to use the GPU.
 ``` shell 
-cat <<EOF > fake-gpu.yaml
+cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: Pod
 metadata:
   name: fake-gpu
 spec:
-   containers:
-   - name: fake-gpu
-     image: nginx
-     resources:
-       limits:
-         nvidia.com/gpu: 1
+  containers:
+  - name: fake-gpu
+    image: nginx
+    resources:
+      limits:
+        nvidia.com/gpu: 1
 EOF
-kubectl apply -f fake-gpu.yaml
 ```
 4. Run your application as you would with a real GPU.
 ``` shell
