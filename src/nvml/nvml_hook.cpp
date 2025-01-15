@@ -15,7 +15,8 @@
 std::mutex global_mutex;
 
 GPUList nvidia_gpus;
-
+int init_count = 0;
+std::mutex init_mutex;
 // load configuration file
 void init() {
     std::lock_guard<std::mutex> lock(global_mutex);
@@ -89,6 +90,9 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlInit_v2() {
     if (nvidia_gpus.empty()) {
         return NVML_ERROR_NOT_FOUND;
     }
+    init_mutex.lock();
+    init_count++;
+    init_mutex.unlock();
     return NVML_SUCCESS;
 }
 
@@ -100,12 +104,20 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlInitWithFlags(unsigned int flags) {
     if (nvidia_gpus.empty()) {
         return NVML_ERROR_NOT_FOUND;
     }
+    init_mutex.lock();
+    init_count++;
+    init_mutex.unlock();
     return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlShutdown() {
     HOOK_TRACE_PROFILE("nvmlShutdown");
-    nvidia_gpus.clear();
+    init_mutex.lock();
+    init_count--;
+    if (init_count == 0) {
+        nvidia_gpus.clear();
+    }
+    init_mutex.unlock();
     return NVML_SUCCESS;
 }
 
@@ -718,7 +730,36 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetComputeMode(nvmlDevice_t d
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetCudaComputeCapability(nvmlDevice_t device, int *major,
                                                                             int *minor) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetCudaComputeCapability");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    /*
+    switch computeMajor {
+    case 1:
+        return "tesla"
+    case 2:
+        return "fermi"
+    case 3:
+        return "kepler"
+    case 5:
+        return "maxwell"
+    case 6:
+        return "pascal"
+    case 7:
+        if computeMinor < 5 {
+            return "volta"
+        }
+        return "turing"
+    case 8:
+        if computeMinor < 9 {
+            return "ampere"
+        }
+        return "ada-lovelace"
+    case 9:
+        return "hopper"
+    }
+    */
+    // GPU *gpu = reinterpret_cast<GPU *>(device);
+    *major = 7;
+    *minor = 5;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetEccMode(nvmlDevice_t device, nvmlEnableState_t *current,
