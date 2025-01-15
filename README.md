@@ -17,6 +17,7 @@ The `fake-gpu` project is designed to simulate GPU information, making it easier
 ## Usage
 
 To use the fake GPU, follow these steps:
+
 You should have a Kubernetes cluster running with containerd as the container runtime.
 You should have already deployed [nvidia-device-plugin](https://github.com/NVIDIA/k8s-device-plugin) or [HAMi](https://github.com/Project-HAMi/HAMi).
 
@@ -29,15 +30,16 @@ You should have already deployed [nvidia-device-plugin](https://github.com/NVIDI
 helm repo add hami-charts https://project-hami.github.io/HAMi/
 helm install hami hami-charts/hami  -n kube-system
 
-### Deploy the fake GPU
 ```
+
+### Deploy the fake GPU 
 1. Download the latest release of the fake GPU.
 ``` shell
-wget https://github.com/chaunceyjiang/fake-gpu/releases/download/<VERSION>fake-gpu-helm-chart-v0.2.0.tgz
+wget https://github.com/chaunceyjiang/fake-gpu/releases/download/v0.2.0/fake-gpu-helm-chart-v0.2.0.tgz
 ```
 2. Deploy the fake GPU to your Kubernetes cluster.
 ``` shell
-helm install fake-gpu fake-gpu-helm-chart-<VERSION>.tgz
+helm install fake-gpu fake-gpu-helm-chart-v0.2.0.tgz
 ```
 3. Configure your application to use the GPU.
 ``` shell 
