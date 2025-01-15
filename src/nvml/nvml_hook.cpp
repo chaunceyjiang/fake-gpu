@@ -1238,8 +1238,8 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceRegisterEvents(nvmlDevice_t d
     s->device_map[gpu->uuid] = gpu;
     for (auto event : gpu->events) {
         s->events[gpu->uuid].push_back(event);
-        HLOG("RegisterEvents: %s %d", gpu->uuid.c_str(), event.type);
-        HLOG("RegisterEvents: %s %d", gpu->uuid.c_str(), event.data);
+        HLOG_DEBUG("RegisterEvents: %s %d", gpu->uuid.c_str(), event.type);
+        HLOG_DEBUG("RegisterEvents: %s %d", gpu->uuid.c_str(), event.data);
     }
     return NVML_SUCCESS;
 }
@@ -1247,9 +1247,8 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceRegisterEvents(nvmlDevice_t d
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetSupportedEventTypes(nvmlDevice_t device,
                                                                           unsigned long long *eventTypes) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetSupportedEventTypes");
-    GPU *gpu = reinterpret_cast<GPU *>(device);
     *eventTypes = 415;
-    HLOG_DEBUG("SupportedEventTypes: %s %llu", gpu->uuid.c_str(), *eventTypes);
+    HLOG_DEBUG("SupportedEventTypes: %s %llu", reinterpret_cast<GPU *>(device)->uuid.c_str(), *eventTypes);
     return NVML_SUCCESS;
 }
 
