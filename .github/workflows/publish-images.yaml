@@ -27,7 +27,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build images
-        run: make images
+        run: make images BUILD_TYPE=Release
 
       - name: Log in to registry
         run: |
@@ -52,7 +52,7 @@ jobs:
                   tag=unstable
                   ;;
               refs/heads/release-*)
-                  tag="v${GITREF#refs/heads/release-}-unstable"
+                  tag="${GITREF#refs/heads/release-}-unstable"
                   ;;
               *)
                   echo "error: can't determine tag."

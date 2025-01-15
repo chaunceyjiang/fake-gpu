@@ -7,13 +7,15 @@ The `fake-gpu` project is designed to simulate GPU information, making it easier
 ## Usage
 
 To use the fake GPU, follow these steps:
-
-1. Deploy the fake GPU to your Kubernetes cluster.
+1. Download the latest release of the fake GPU.
 ``` shell
-helm template charts/fake-gpu --set imag.repository=chaunceyjiang/fake-gpu  --set image.tag=v1.0.0 --set nri.runtime.patchConfig=false > install.yaml
-kubectl apply -f install.yaml
+wget https://github.com/chaunceyjiang/fake-gpu/releases/download/<VERSION>fake-gpu-helm-chart-v0.2.0.tgz
 ```
-2. Configure your application to use the GPU.
+2. Deploy the fake GPU to your Kubernetes cluster.
+``` shell
+helm install fake-gpu fake-gpu-helm-chart-<VERSION>.tgz
+```
+3. Configure your application to use the GPU.
 ``` shell 
 cat <<EOF > fake-gpu.yaml
 apiVersion: v1
@@ -30,7 +32,7 @@ spec:
 EOF
 kubectl apply -f fake-gpu.yaml
 ```
-3. Run your application as you would with a real GPU.
+4. Run your application as you would with a real GPU.
 ``` shell
 kubectl exec -it fake-gpu -- nvidia-smi
 +---------------------------------------------------------------------------------------+

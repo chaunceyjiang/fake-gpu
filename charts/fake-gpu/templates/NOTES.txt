@@ -1,1 +1,12 @@
-安装时会重启 conainerd
+
+  ______      _            _____  _____   _    _ 
+ |  ____|    | |          / ____||  __ \ | |  | |
+ | |__  __ _ | | __ ___  | |  __ | |__) || |  | |
+ |  __|/ _` || |/ // _ \ | | |_ ||  ___/ | |  | |
+ | |  | (_| ||   <|  __/ | |__| || |     | |__| |
+ |_|   \__,_||_|\_\\___|  \_____||_|      \____/ 
+                                                 
+                                                 
+Note: 
+Fake GPU is a fake GPU device. It cannot perform real GPU CUDA and will only return some query results.
+It is intended for testing and development purposes only.
