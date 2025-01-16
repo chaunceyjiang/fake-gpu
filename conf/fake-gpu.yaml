@@ -39,6 +39,40 @@ nvidia:
       eventData: 43
     - eventType: 8
       eventData: 45
+    dcgm:
+      fields:
+      - fieldId: 147 #Field Identifiers.
+        fieldName: NVML_FI_DEV_NVSWITCH_CONNECTED_LINK_COUNT
+        fieldType: unsigned int # Field Types. [double, unsigned int, unsigned long, unsigned long long, signed long long].
+        fieldValue: 30
+      - fieldId: 82
+        fieldName: NVML_FI_DEV_MEMORY_TEMP
+        fieldType: unsigned int
+        fieldValue: 250
+      - fieldId: 83
+        fieldName: NVML_FI_DEV_TOTAL_ENERGY_CONSUMPTION
+        fieldType: unsigned int
+        fieldValue: 0
+      - fieldId: 139
+        fieldName: NVML_FI_DEV_NVLINK_THROUGHPUT_DATA_RX
+        fieldType: unsigned int
+        fieldValue: 0
+      - fieldId: 138
+        fieldName: NVML_FI_DEV_NVLINK_THROUGHPUT_DATA_TX
+        fieldType: unsigned int
+        fieldValue: 0
+      - fieldId: 142
+        fieldName: NVML_FI_DEV_NVLINK_THROUGHPUT_RAW_RX
+        fieldType: unsigned int
+        fieldValue: 0
+      - fieldId: 143
+        fieldName: NVML_FI_DEV_REMAPPED_UNC
+        fieldType: unsigned int
+        fieldValue: 0
+      - fieldId: 145
+        fieldName: NVML_FI_DEV_REMAPPED_FAILURE
+        fieldType: unsigned int
+        fieldValue: 0
   - name: NVIDIA Tesla P4
     uuid: GPU-bcd
     driver_version: 440.33.01
@@ -55,8 +89,8 @@ nvidia:
       enforcedLimit: 450000
       usage: 250000
     utilization:
-      gpu: 0
-      memory: 0
+      gpu: 10
+      memory: 10
     memory:
       total: 16160000000
       free: 16160000000
@@ -80,4 +114,36 @@ nvidia:
     - eventType: 8
       eventData: 31
     dcgm:
-    
+      fields:
+      - fieldId: 147 #Field Identifiers.
+        fieldName: NVML_FI_DEV_NVSWITCH_CONNECTED_LINK_COUNT
+        fieldType: unsigned int # Field Types. [double, unsigned int, unsigned long, unsigned long long, signed long long].
+        fieldValue: 30
+      - fieldId: 82
+        fieldName: NVML_FI_DEV_MEMORY_TEMP
+        fieldType: unsigned int
+        fieldValue: 250
+      - fieldId: 83
+        fieldName: NVML_FI_DEV_TOTAL_ENERGY_CONSUMPTION
+        fieldType: unsigned int
+        fieldValue: 0
+      - fieldId: 139
+        fieldName: NVML_FI_DEV_NVLINK_THROUGHPUT_DATA_RX
+        fieldType: unsigned int
+        fieldValue: 0
+      - fieldId: 138
+        fieldName: NVML_FI_DEV_NVLINK_THROUGHPUT_DATA_TX
+        fieldType: unsigned int
+        fieldValue: 0
+      - fieldId: 142
+        fieldName: NVML_FI_DEV_NVLINK_THROUGHPUT_RAW_RX
+        fieldType: unsigned int
+        fieldValue: 0
+      - fieldId: 143
+        fieldName: NVML_FI_DEV_REMAPPED_UNC
+        fieldType: unsigned int
+        fieldValue: 0
+      - fieldId: 145
+        fieldName: NVML_FI_DEV_REMAPPED_FAILURE
+        fieldType: unsigned int
+        fieldValue: 0

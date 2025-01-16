@@ -93,6 +93,65 @@ struct GPU_Power {
     }
 };
 
+typedef enum DCGM_FieldType {
+    DOUBLE = 0,
+    UNSIGNED_INT = 1,
+    UNSIGNED_LONG = 2,
+    UNSIGNED_LONG_LONG = 3,
+    SIGNED_LONG_LONG = 4,
+
+    // Keep this last
+    NVML_VALUE_TYPE_COUNT
+} DCGM_FieldType_t;
+
+typedef union DCGM_FieldValue {
+    double dVal;                //!< If the value is double
+    unsigned int uiVal;         //!< If the value is unsigned int
+    unsigned long ulVal;        //!< If the value is unsigned long
+    unsigned long long ullVal;  //!< If the value is unsigned long long
+    signed long long sllVal;    //!< If the value is signed long long
+};
+
+struct DCGM_Field {
+    int fieldId;
+    std::string fieldName;
+    DCGM_FieldType_t fieldType;
+    DCGM_FieldValue value;
+
+    friend void operator>>(const YAML::Node &node, DCGM_Field &field) {
+        field.fieldId = node["fieldId"].as<int>();
+        field.fieldName = node["fieldName"].as<std::string>();
+        if (node["fieldType"].as<std::string>() == "double") {
+            field.value.dVal = node["value"].as<double>();
+            field.fieldType = DOUBLE;
+        } else if (node["fieldType"].as<std::string>() == "unsigned int") {
+            field.value.uiVal = node["value"].as<unsigned int>();
+            field.fieldType = UNSIGNED_INT;
+        } else if (node["fieldType"].as<std::string>() == "unsigned long") {
+            field.value.ulVal = node["value"].as<unsigned long>();
+            field.fieldType = UNSIGNED_LONG;
+        } else if (node["fieldType"].as<std::string>() == "unsigned long long") {
+            field.value.ullVal = node["value"].as<unsigned long long>();
+            field.fieldType = UNSIGNED_LONG_LONG;
+        } else if (node["fieldType"].as<std::string>() == "signed long long") {
+            field.value.sllVal = node["value"].as<signed long long>();
+            field.fieldType = SIGNED_LONG_LONG;
+        }
+    }
+};
+using DCGMFieldList = std::vector<DCGM_Field>;
+struct DCGM {
+    DCGMFieldList fields;
+
+    friend void operator>>(const YAML::Node &node, DCGM &dcgm) {
+        for (const auto &field_node : node["fields"]) {
+            DCGM_Field field;
+            field_node >> field;
+            dcgm.fields.push_back(field);
+        }
+    }
+};
+
 // GPU struct
 struct GPU {
     std::string name;
@@ -112,6 +171,7 @@ struct GPU {
     NVLink nvlink;
     MIG mig;
     EventList events;
+    DCGM dcgm;
     friend void operator>>(const YAML::Node &node, GPU &gpu) {
         gpu.name = node["name"].as<std::string>();
         gpu.uuid = node["uuid"].as<std::string>();
@@ -136,6 +196,7 @@ struct GPU {
                 gpu.events.push_back(event);
             }
         }
+        node["dcgm"] >> gpu.dcgm;
     }
 };
 

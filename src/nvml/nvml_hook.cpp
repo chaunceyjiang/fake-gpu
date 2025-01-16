@@ -1311,10 +1311,40 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceDiscoverGpus(nvmlPciInfo_t *p
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetFieldValues(nvmlDevice_t device, int valuesCount,
                                                                   nvmlFieldValue_t *values) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetFieldValues");
+    auto now = std::chrono::high_resolution_clock::now();
+    auto duration = now.time_since_epoch();
+    bool found = false;
+    auto timestamp = std::chrono::duration_cast<std::chrono::microseconds>(duration).count();
+    GPU *gpu = reinterpret_cast<GPU *>(device);
     for (int i = 0; i < valuesCount; i++) {
-        HLOG_DEBUG("nvmlDeviceGetFieldValues: %s %d", reinterpret_cast<GPU *>(device)->uuid.c_str(),
-                   values[i].fieldId);
-        values[i].nvmlReturn = NVML_ERROR_NOT_SUPPORTED;
+        for (std::vector<DCGM_Field>::size_type j = 0; j < gpu->dcgm.fields.size(); j++) {
+            if (gpu->dcgm.fields[j].fieldId == values[i].fieldId) {
+                values[i].valueType = static_cast<nvmlValueType_t>(gpu->dcgm.fields[j].fieldType);
+                values[i].timestamp = timestamp;
+                values[i].nvmlReturn = NVML_SUCCESS;
+                switch (gpu->dcgm.fields[j].fieldType) {
+                    case DOUBLE:
+                        values[i].value.dVal = gpu->dcgm.fields[j].value.dVal;
+                        break;
+                    case UNSIGNED_INT:
+                        values[i].value.uiVal = gpu->dcgm.fields[j].value.uiVal;
+                        break;
+                    case SIGNED_LONG_LONG:
+                        values[i].value.sllVal = gpu->dcgm.fields[j].value.sllVal;
+                        break;
+                    case UNSIGNED_LONG_LONG:
+                        values[i].value.ullVal = gpu->dcgm.fields[j].value.ullVal;
+                        break;
+                    case UNSIGNED_LONG:
+                        values[i].value.ulVal = gpu->dcgm.fields[j].value.ulVal;
+                        break;
+                }
+            }
+            found = true;
+        }
+        if (!found) {
+            values[i].nvmlReturn = NVML_ERROR_NOT_SUPPORTED;
+        }
     }
     return NVML_SUCCESS;
 }

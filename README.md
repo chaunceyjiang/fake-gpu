@@ -11,6 +11,7 @@ The `fake-gpu` project is designed to simulate GPU information, making it easier
 - Non-intrusive, no need to modify application code.
 - Supports CUDA Driver, CUDA Runtime, NVML API
 - Supports nvidia-smi
+- Supports DCGM-Exporter
 
 ## Requirements
 - containerd >= 1.7.0
