@@ -110,13 +110,13 @@ union DCGM_FieldValue {
 };
 
 struct DCGM_Field {
-    int fieldId;
+    unsigned int fieldId;
     std::string fieldName;
     DCGM_FieldType_t fieldType;
     DCGM_FieldValue value;
 
     friend void operator>>(const YAML::Node &node, DCGM_Field &field) {
-        field.fieldId = node["fieldId"].as<int>();
+        field.fieldId = node["fieldId"].as<unsigned int>();
         field.fieldName = node["fieldName"].as<std::string>();
         if (node["fieldType"].as<std::string>() == "double") {
             field.value.dVal = node["value"].as<double>();
