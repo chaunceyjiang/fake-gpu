@@ -99,12 +99,9 @@ typedef enum DCGM_FieldType {
     UNSIGNED_LONG = 2,
     UNSIGNED_LONG_LONG = 3,
     SIGNED_LONG_LONG = 4,
-
-    // Keep this last
-    NVML_VALUE_TYPE_COUNT
 } DCGM_FieldType_t;
 
-typedef union DCGM_FieldValue {
+union DCGM_FieldValue {
     double dVal;                //!< If the value is double
     unsigned int uiVal;         //!< If the value is unsigned int
     unsigned long ulVal;        //!< If the value is unsigned long
