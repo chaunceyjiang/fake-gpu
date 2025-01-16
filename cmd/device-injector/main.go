@@ -102,25 +102,30 @@ func injectMounts(pod *api.PodSandbox, ctr *api.Container, a *api.ContainerAdjus
 			log.Infof("%s: injecting GPU...", containerName(pod, ctr))
 		}
 	}
+	filenames := []string{
+		"libcuda.so.1",
+		"libnvidia-ml.so.1",
+		"libcudart.so"}
+	librarySearchPaths := []string{
+		"/lib",
+		"/usr/lib64",
+		"/usr/lib/x86_64-linux-gnu",
+		"/usr/lib/aarch64-linux-gnu",
+		"/lib64",
+		"/lib/x86_64-linux-gnu",
+		"/lib/aarch64-linux-gnu",
+	}
 	if injectGPU != injectGPUTypeNone {
-		mounts = append(mounts, mount{
-			Source:      fmt.Sprintf("%s/libfakegpu.so", sourceHostPath),
-			Destination: "/lib64/libnvidia-ml.so.1",
-			Type:        "bind",
-			Options:     mountOption,
-		})
-		mounts = append(mounts, mount{
-			Source:      fmt.Sprintf("%s/libfakegpu.so", sourceHostPath),
-			Destination: "/lib64/libcuda.so.1",
-			Type:        "bind",
-			Options:     mountOption,
-		})
-		mounts = append(mounts, mount{
-			Source:      fmt.Sprintf("%s/libfakegpu.so", sourceHostPath),
-			Destination: "/lib64/libcudart.so",
-			Type:        "bind",
-			Options:     mountOption,
-		})
+		for _, filename := range filenames {
+			for _, path := range librarySearchPaths {
+				mounts = append(mounts, mount{
+					Source:      fmt.Sprintf("%s/libfakegpu.so", sourceHostPath),
+					Destination: fmt.Sprintf("%s/%s", path, filename),
+					Type:        "bind",
+					Options:     mountOption,
+				})
+			}
+		}
 		mounts = append(mounts, mount{
 			Source:      fmt.Sprintf("%s/nvidia-smi", sourceHostPath),
 			Destination: "/usr/bin/nvidia-smi",

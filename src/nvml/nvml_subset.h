@@ -349,6 +349,329 @@ typedef union nvmlValue_st {
 } nvmlValue_t;
 
 /**
+ * Field Identifiers.
+ *
+ * All Identifiers pertain to a device. Each ID is only used once and is guaranteed never to change.
+ */
+#define NVML_FI_DEV_ECC_CURRENT 1  //!< Current ECC mode. 1=Active. 0=Inactive
+#define NVML_FI_DEV_ECC_PENDING 2  //!< Pending ECC mode. 1=Active. 0=Inactive
+/* ECC Count Totals */
+#define NVML_FI_DEV_ECC_SBE_VOL_TOTAL 3  //!< Total single bit volatile ECC errors
+#define NVML_FI_DEV_ECC_DBE_VOL_TOTAL 4  //!< Total double bit volatile ECC errors
+#define NVML_FI_DEV_ECC_SBE_AGG_TOTAL 5  //!< Total single bit aggregate (persistent) ECC errors
+#define NVML_FI_DEV_ECC_DBE_AGG_TOTAL 6  //!< Total double bit aggregate (persistent) ECC errors
+/* Individual ECC locations */
+#define NVML_FI_DEV_ECC_SBE_VOL_L1 7    //!< L1 cache single bit volatile ECC errors
+#define NVML_FI_DEV_ECC_DBE_VOL_L1 8    //!< L1 cache double bit volatile ECC errors
+#define NVML_FI_DEV_ECC_SBE_VOL_L2 9    //!< L2 cache single bit volatile ECC errors
+#define NVML_FI_DEV_ECC_DBE_VOL_L2 10   //!< L2 cache double bit volatile ECC errors
+#define NVML_FI_DEV_ECC_SBE_VOL_DEV 11  //!< Device memory single bit volatile ECC errors
+#define NVML_FI_DEV_ECC_DBE_VOL_DEV 12  //!< Device memory double bit volatile ECC errors
+#define NVML_FI_DEV_ECC_SBE_VOL_REG 13  //!< Register file single bit volatile ECC errors
+#define NVML_FI_DEV_ECC_DBE_VOL_REG 14  //!< Register file double bit volatile ECC errors
+#define NVML_FI_DEV_ECC_SBE_VOL_TEX 15  //!< Texture memory single bit volatile ECC errors
+#define NVML_FI_DEV_ECC_DBE_VOL_TEX 16  //!< Texture memory double bit volatile ECC errors
+#define NVML_FI_DEV_ECC_DBE_VOL_CBU 17  //!< CBU double bit volatile ECC errors
+#define NVML_FI_DEV_ECC_SBE_AGG_L1 18   //!< L1 cache single bit aggregate (persistent) ECC errors
+#define NVML_FI_DEV_ECC_DBE_AGG_L1 19   //!< L1 cache double bit aggregate (persistent) ECC errors
+#define NVML_FI_DEV_ECC_SBE_AGG_L2 20   //!< L2 cache single bit aggregate (persistent) ECC errors
+#define NVML_FI_DEV_ECC_DBE_AGG_L2 21   //!< L2 cache double bit aggregate (persistent) ECC errors
+#define NVML_FI_DEV_ECC_SBE_AGG_DEV 22  //!< Device memory single bit aggregate (persistent) ECC errors
+#define NVML_FI_DEV_ECC_DBE_AGG_DEV 23  //!< Device memory double bit aggregate (persistent) ECC errors
+#define NVML_FI_DEV_ECC_SBE_AGG_REG 24  //!< Register File single bit aggregate (persistent) ECC errors
+#define NVML_FI_DEV_ECC_DBE_AGG_REG 25  //!< Register File double bit aggregate (persistent) ECC errors
+#define NVML_FI_DEV_ECC_SBE_AGG_TEX 26  //!< Texture memory single bit aggregate (persistent) ECC errors
+#define NVML_FI_DEV_ECC_DBE_AGG_TEX 27  //!< Texture memory double bit aggregate (persistent) ECC errors
+#define NVML_FI_DEV_ECC_DBE_AGG_CBU 28  //!< CBU double bit aggregate ECC errors
+
+/* Page Retirement */
+#define NVML_FI_DEV_RETIRED_SBE 29      //!< Number of retired pages because of single bit errors
+#define NVML_FI_DEV_RETIRED_DBE 30      //!< Number of retired pages because of double bit errors
+#define NVML_FI_DEV_RETIRED_PENDING 31  //!< If any pages are pending retirement. 1=yes. 0=no.
+
+/* NvLink Flit Error Counters */
+#define NVML_FI_DEV_NVLINK_CRC_FLIT_ERROR_COUNT_L0 32  //!< NVLink flow control CRC  Error Counter for Lane 0
+#define NVML_FI_DEV_NVLINK_CRC_FLIT_ERROR_COUNT_L1 33  //!< NVLink flow control CRC  Error Counter for Lane 1
+#define NVML_FI_DEV_NVLINK_CRC_FLIT_ERROR_COUNT_L2 34  //!< NVLink flow control CRC  Error Counter for Lane 2
+#define NVML_FI_DEV_NVLINK_CRC_FLIT_ERROR_COUNT_L3 35  //!< NVLink flow control CRC  Error Counter for Lane 3
+#define NVML_FI_DEV_NVLINK_CRC_FLIT_ERROR_COUNT_L4 36  //!< NVLink flow control CRC  Error Counter for Lane 4
+#define NVML_FI_DEV_NVLINK_CRC_FLIT_ERROR_COUNT_L5 37  //!< NVLink flow control CRC  Error Counter for Lane 5
+#define NVML_FI_DEV_NVLINK_CRC_FLIT_ERROR_COUNT_TOTAL \
+    38  //!< NVLink flow control CRC  Error Counter total for all Lanes
+
+/* NvLink CRC Data Error Counters */
+#define NVML_FI_DEV_NVLINK_CRC_DATA_ERROR_COUNT_L0 39     //!< NVLink data CRC Error Counter for Lane 0
+#define NVML_FI_DEV_NVLINK_CRC_DATA_ERROR_COUNT_L1 40     //!< NVLink data CRC Error Counter for Lane 1
+#define NVML_FI_DEV_NVLINK_CRC_DATA_ERROR_COUNT_L2 41     //!< NVLink data CRC Error Counter for Lane 2
+#define NVML_FI_DEV_NVLINK_CRC_DATA_ERROR_COUNT_L3 42     //!< NVLink data CRC Error Counter for Lane 3
+#define NVML_FI_DEV_NVLINK_CRC_DATA_ERROR_COUNT_L4 43     //!< NVLink data CRC Error Counter for Lane 4
+#define NVML_FI_DEV_NVLINK_CRC_DATA_ERROR_COUNT_L5 44     //!< NVLink data CRC Error Counter for Lane 5
+#define NVML_FI_DEV_NVLINK_CRC_DATA_ERROR_COUNT_TOTAL 45  //!< NvLink data CRC Error Counter total for all Lanes
+
+/* NvLink Replay Error Counters */
+#define NVML_FI_DEV_NVLINK_REPLAY_ERROR_COUNT_L0 46     //!< NVLink Replay Error Counter for Lane 0
+#define NVML_FI_DEV_NVLINK_REPLAY_ERROR_COUNT_L1 47     //!< NVLink Replay Error Counter for Lane 1
+#define NVML_FI_DEV_NVLINK_REPLAY_ERROR_COUNT_L2 48     //!< NVLink Replay Error Counter for Lane 2
+#define NVML_FI_DEV_NVLINK_REPLAY_ERROR_COUNT_L3 49     //!< NVLink Replay Error Counter for Lane 3
+#define NVML_FI_DEV_NVLINK_REPLAY_ERROR_COUNT_L4 50     //!< NVLink Replay Error Counter for Lane 4
+#define NVML_FI_DEV_NVLINK_REPLAY_ERROR_COUNT_L5 51     //!< NVLink Replay Error Counter for Lane 5
+#define NVML_FI_DEV_NVLINK_REPLAY_ERROR_COUNT_TOTAL 52  //!< NVLink Replay Error Counter total for all Lanes
+
+/* NvLink Recovery Error Counters */
+#define NVML_FI_DEV_NVLINK_RECOVERY_ERROR_COUNT_L0 53     //!< NVLink Recovery Error Counter for Lane 0
+#define NVML_FI_DEV_NVLINK_RECOVERY_ERROR_COUNT_L1 54     //!< NVLink Recovery Error Counter for Lane 1
+#define NVML_FI_DEV_NVLINK_RECOVERY_ERROR_COUNT_L2 55     //!< NVLink Recovery Error Counter for Lane 2
+#define NVML_FI_DEV_NVLINK_RECOVERY_ERROR_COUNT_L3 56     //!< NVLink Recovery Error Counter for Lane 3
+#define NVML_FI_DEV_NVLINK_RECOVERY_ERROR_COUNT_L4 57     //!< NVLink Recovery Error Counter for Lane 4
+#define NVML_FI_DEV_NVLINK_RECOVERY_ERROR_COUNT_L5 58     //!< NVLink Recovery Error Counter for Lane 5
+#define NVML_FI_DEV_NVLINK_RECOVERY_ERROR_COUNT_TOTAL 59  //!< NVLink Recovery Error Counter total for all Lanes
+
+/* NvLink Bandwidth Counters */
+/*
+ * NVML_FI_DEV_NVLINK_BANDWIDTH_* field values are now deprecated.
+ * Please use the following field values instead:
+ * NVML_FI_DEV_NVLINK_THROUGHPUT_DATA_TX
+ * NVML_FI_DEV_NVLINK_THROUGHPUT_DATA_RX
+ * NVML_FI_DEV_NVLINK_THROUGHPUT_RAW_TX
+ * NVML_FI_DEV_NVLINK_THROUGHPUT_RAW_RX
+ */
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C0_L0 60     //!< NVLink Bandwidth Counter for Counter Set 0, Lane 0
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C0_L1 61     //!< NVLink Bandwidth Counter for Counter Set 0, Lane 1
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C0_L2 62     //!< NVLink Bandwidth Counter for Counter Set 0, Lane 2
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C0_L3 63     //!< NVLink Bandwidth Counter for Counter Set 0, Lane 3
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C0_L4 64     //!< NVLink Bandwidth Counter for Counter Set 0, Lane 4
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C0_L5 65     //!< NVLink Bandwidth Counter for Counter Set 0, Lane 5
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C0_TOTAL 66  //!< NVLink Bandwidth Counter Total for Counter Set 0, All Lanes
+
+/* NvLink Bandwidth Counters */
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C1_L0 67     //!< NVLink Bandwidth Counter for Counter Set 1, Lane 0
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C1_L1 68     //!< NVLink Bandwidth Counter for Counter Set 1, Lane 1
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C1_L2 69     //!< NVLink Bandwidth Counter for Counter Set 1, Lane 2
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C1_L3 70     //!< NVLink Bandwidth Counter for Counter Set 1, Lane 3
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C1_L4 71     //!< NVLink Bandwidth Counter for Counter Set 1, Lane 4
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C1_L5 72     //!< NVLink Bandwidth Counter for Counter Set 1, Lane 5
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C1_TOTAL 73  //!< NVLink Bandwidth Counter Total for Counter Set 1, All Lanes
+
+/* NVML Perf Policy Counters */
+#define NVML_FI_DEV_PERF_POLICY_POWER 74              //!< Perf Policy Counter for Power Policy
+#define NVML_FI_DEV_PERF_POLICY_THERMAL 75            //!< Perf Policy Counter for Thermal Policy
+#define NVML_FI_DEV_PERF_POLICY_SYNC_BOOST 76         //!< Perf Policy Counter for Sync boost Policy
+#define NVML_FI_DEV_PERF_POLICY_BOARD_LIMIT 77        //!< Perf Policy Counter for Board Limit
+#define NVML_FI_DEV_PERF_POLICY_LOW_UTILIZATION 78    //!< Perf Policy Counter for Low GPU Utilization Policy
+#define NVML_FI_DEV_PERF_POLICY_RELIABILITY 79        //!< Perf Policy Counter for Reliability Policy
+#define NVML_FI_DEV_PERF_POLICY_TOTAL_APP_CLOCKS 80   //!< Perf Policy Counter for Total App Clock Policy
+#define NVML_FI_DEV_PERF_POLICY_TOTAL_BASE_CLOCKS 81  //!< Perf Policy Counter for Total Base Clocks Policy
+
+/* Memory temperatures */
+#define NVML_FI_DEV_MEMORY_TEMP 82  //!< Memory temperature for the device
+
+/* Energy Counter */
+#define NVML_FI_DEV_TOTAL_ENERGY_CONSUMPTION \
+    83  //!< Total energy consumption for the GPU in mJ since the driver was last reloaded
+
+/* NVLink Speed */
+#define NVML_FI_DEV_NVLINK_SPEED_MBPS_L0 84      //!< NVLink Speed in MBps for Link 0
+#define NVML_FI_DEV_NVLINK_SPEED_MBPS_L1 85      //!< NVLink Speed in MBps for Link 1
+#define NVML_FI_DEV_NVLINK_SPEED_MBPS_L2 86      //!< NVLink Speed in MBps for Link 2
+#define NVML_FI_DEV_NVLINK_SPEED_MBPS_L3 87      //!< NVLink Speed in MBps for Link 3
+#define NVML_FI_DEV_NVLINK_SPEED_MBPS_L4 88      //!< NVLink Speed in MBps for Link 4
+#define NVML_FI_DEV_NVLINK_SPEED_MBPS_L5 89      //!< NVLink Speed in MBps for Link 5
+#define NVML_FI_DEV_NVLINK_SPEED_MBPS_COMMON 90  //!< Common NVLink Speed in MBps for active links
+
+#define NVML_FI_DEV_NVLINK_LINK_COUNT 91  //!< Number of NVLinks present on the device
+
+#define NVML_FI_DEV_RETIRED_PENDING_SBE 92  //!< If any pages are pending retirement due to SBE. 1=yes. 0=no.
+#define NVML_FI_DEV_RETIRED_PENDING_DBE 93  //!< If any pages are pending retirement due to DBE. 1=yes. 0=no.
+
+#define NVML_FI_DEV_PCIE_REPLAY_COUNTER 94           //!< PCIe replay counter
+#define NVML_FI_DEV_PCIE_REPLAY_ROLLOVER_COUNTER 95  //!< PCIe replay rollover counter
+
+/* NvLink Flit Error Counters */
+#define NVML_FI_DEV_NVLINK_CRC_FLIT_ERROR_COUNT_L6 96    //!< NVLink flow control CRC  Error Counter for Lane 6
+#define NVML_FI_DEV_NVLINK_CRC_FLIT_ERROR_COUNT_L7 97    //!< NVLink flow control CRC  Error Counter for Lane 7
+#define NVML_FI_DEV_NVLINK_CRC_FLIT_ERROR_COUNT_L8 98    //!< NVLink flow control CRC  Error Counter for Lane 8
+#define NVML_FI_DEV_NVLINK_CRC_FLIT_ERROR_COUNT_L9 99    //!< NVLink flow control CRC  Error Counter for Lane 9
+#define NVML_FI_DEV_NVLINK_CRC_FLIT_ERROR_COUNT_L10 100  //!< NVLink flow control CRC  Error Counter for Lane 10
+#define NVML_FI_DEV_NVLINK_CRC_FLIT_ERROR_COUNT_L11 101  //!< NVLink flow control CRC  Error Counter for Lane 11
+
+/* NvLink CRC Data Error Counters */
+#define NVML_FI_DEV_NVLINK_CRC_DATA_ERROR_COUNT_L6 102   //!< NVLink data CRC Error Counter for Lane 6
+#define NVML_FI_DEV_NVLINK_CRC_DATA_ERROR_COUNT_L7 103   //!< NVLink data CRC Error Counter for Lane 7
+#define NVML_FI_DEV_NVLINK_CRC_DATA_ERROR_COUNT_L8 104   //!< NVLink data CRC Error Counter for Lane 8
+#define NVML_FI_DEV_NVLINK_CRC_DATA_ERROR_COUNT_L9 105   //!< NVLink data CRC Error Counter for Lane 9
+#define NVML_FI_DEV_NVLINK_CRC_DATA_ERROR_COUNT_L10 106  //!< NVLink data CRC Error Counter for Lane 10
+#define NVML_FI_DEV_NVLINK_CRC_DATA_ERROR_COUNT_L11 107  //!< NVLink data CRC Error Counter for Lane 11
+
+/* NvLink Replay Error Counters */
+#define NVML_FI_DEV_NVLINK_REPLAY_ERROR_COUNT_L6 108   //!< NVLink Replay Error Counter for Lane 6
+#define NVML_FI_DEV_NVLINK_REPLAY_ERROR_COUNT_L7 109   //!< NVLink Replay Error Counter for Lane 7
+#define NVML_FI_DEV_NVLINK_REPLAY_ERROR_COUNT_L8 110   //!< NVLink Replay Error Counter for Lane 8
+#define NVML_FI_DEV_NVLINK_REPLAY_ERROR_COUNT_L9 111   //!< NVLink Replay Error Counter for Lane 9
+#define NVML_FI_DEV_NVLINK_REPLAY_ERROR_COUNT_L10 112  //!< NVLink Replay Error Counter for Lane 10
+#define NVML_FI_DEV_NVLINK_REPLAY_ERROR_COUNT_L11 113  //!< NVLink Replay Error Counter for Lane 11
+
+/* NvLink Recovery Error Counters */
+#define NVML_FI_DEV_NVLINK_RECOVERY_ERROR_COUNT_L6 114   //!< NVLink Recovery Error Counter for Lane 6
+#define NVML_FI_DEV_NVLINK_RECOVERY_ERROR_COUNT_L7 115   //!< NVLink Recovery Error Counter for Lane 7
+#define NVML_FI_DEV_NVLINK_RECOVERY_ERROR_COUNT_L8 116   //!< NVLink Recovery Error Counter for Lane 8
+#define NVML_FI_DEV_NVLINK_RECOVERY_ERROR_COUNT_L9 117   //!< NVLink Recovery Error Counter for Lane 9
+#define NVML_FI_DEV_NVLINK_RECOVERY_ERROR_COUNT_L10 118  //!< NVLink Recovery Error Counter for Lane 10
+#define NVML_FI_DEV_NVLINK_RECOVERY_ERROR_COUNT_L11 119  //!< NVLink Recovery Error Counter for Lane 11
+
+/* NvLink Bandwidth Counters */
+/*
+ * NVML_FI_DEV_NVLINK_BANDWIDTH_* field values are now deprecated.
+ * Please use the following field values instead:
+ * NVML_FI_DEV_NVLINK_THROUGHPUT_DATA_TX
+ * NVML_FI_DEV_NVLINK_THROUGHPUT_DATA_RX
+ * NVML_FI_DEV_NVLINK_THROUGHPUT_RAW_TX
+ * NVML_FI_DEV_NVLINK_THROUGHPUT_RAW_RX
+ */
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C0_L6 120   //!< NVLink Bandwidth Counter for Counter Set 0, Lane 6
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C0_L7 121   //!< NVLink Bandwidth Counter for Counter Set 0, Lane 7
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C0_L8 122   //!< NVLink Bandwidth Counter for Counter Set 0, Lane 8
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C0_L9 123   //!< NVLink Bandwidth Counter for Counter Set 0, Lane 9
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C0_L10 124  //!< NVLink Bandwidth Counter for Counter Set 0, Lane 10
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C0_L11 125  //!< NVLink Bandwidth Counter for Counter Set 0, Lane 11
+
+/* NvLink Bandwidth Counters */
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C1_L6 126   //!< NVLink Bandwidth Counter for Counter Set 1, Lane 6
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C1_L7 127   //!< NVLink Bandwidth Counter for Counter Set 1, Lane 7
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C1_L8 128   //!< NVLink Bandwidth Counter for Counter Set 1, Lane 8
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C1_L9 129   //!< NVLink Bandwidth Counter for Counter Set 1, Lane 9
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C1_L10 130  //!< NVLink Bandwidth Counter for Counter Set 1, Lane 10
+#define NVML_FI_DEV_NVLINK_BANDWIDTH_C1_L11 131  //!< NVLink Bandwidth Counter for Counter Set 1, Lane 11
+
+/* NVLink Speed */
+#define NVML_FI_DEV_NVLINK_SPEED_MBPS_L6 132   //!< NVLink Speed in MBps for Link 6
+#define NVML_FI_DEV_NVLINK_SPEED_MBPS_L7 133   //!< NVLink Speed in MBps for Link 7
+#define NVML_FI_DEV_NVLINK_SPEED_MBPS_L8 134   //!< NVLink Speed in MBps for Link 8
+#define NVML_FI_DEV_NVLINK_SPEED_MBPS_L9 135   //!< NVLink Speed in MBps for Link 9
+#define NVML_FI_DEV_NVLINK_SPEED_MBPS_L10 136  //!< NVLink Speed in MBps for Link 10
+#define NVML_FI_DEV_NVLINK_SPEED_MBPS_L11 137  //!< NVLink Speed in MBps for Link 11
+
+/**
+ * NVLink throughput counters field values
+ *
+ * Link ID needs to be specified in the scopeId field in nvmlFieldValue_t.
+ * A scopeId of UINT_MAX returns aggregate value summed up across all links
+ * for the specified counter type in fieldId.
+ */
+#define NVML_FI_DEV_NVLINK_THROUGHPUT_DATA_TX 138  //!< NVLink TX Data throughput in KiB
+#define NVML_FI_DEV_NVLINK_THROUGHPUT_DATA_RX 139  //!< NVLink RX Data throughput in KiB
+#define NVML_FI_DEV_NVLINK_THROUGHPUT_RAW_TX 140   //!< NVLink TX Data + protocol overhead in KiB
+#define NVML_FI_DEV_NVLINK_THROUGHPUT_RAW_RX 141   //!< NVLink RX Data + protocol overhead in KiB
+
+/* Row Remapper */
+#define NVML_FI_DEV_REMAPPED_COR 142      //!< Number of remapped rows due to correctable errors
+#define NVML_FI_DEV_REMAPPED_UNC 143      //!< Number of remapped rows due to uncorrectable errors
+#define NVML_FI_DEV_REMAPPED_PENDING 144  //!< If any rows are pending remapping. 1=yes 0=no
+#define NVML_FI_DEV_REMAPPED_FAILURE 145  //!< If any rows failed to be remapped 1=yes 0=no
+
+/**
+ * Remote device NVLink ID
+ *
+ * Link ID needs to be specified in the scopeId field in nvmlFieldValue_t.
+ */
+#define NVML_FI_DEV_NVLINK_REMOTE_NVLINK_ID 146  //!< Remote device NVLink ID
+
+/**
+ * NVSwitch: connected NVLink count
+ */
+#define NVML_FI_DEV_NVSWITCH_CONNECTED_LINK_COUNT 147  //!< Number of NVLinks connected to NVSwitch
+
+/* NvLink ECC Data Error Counters
+ *
+ * Lane ID needs to be specified in the scopeId field in nvmlFieldValue_t.
+ *
+ */
+#define NVML_FI_DEV_NVLINK_ECC_DATA_ERROR_COUNT_L0 148     //!< NVLink data ECC Error Counter for Link 0
+#define NVML_FI_DEV_NVLINK_ECC_DATA_ERROR_COUNT_L1 149     //!< NVLink data ECC Error Counter for Link 1
+#define NVML_FI_DEV_NVLINK_ECC_DATA_ERROR_COUNT_L2 150     //!< NVLink data ECC Error Counter for Link 2
+#define NVML_FI_DEV_NVLINK_ECC_DATA_ERROR_COUNT_L3 151     //!< NVLink data ECC Error Counter for Link 3
+#define NVML_FI_DEV_NVLINK_ECC_DATA_ERROR_COUNT_L4 152     //!< NVLink data ECC Error Counter for Link 4
+#define NVML_FI_DEV_NVLINK_ECC_DATA_ERROR_COUNT_L5 153     //!< NVLink data ECC Error Counter for Link 5
+#define NVML_FI_DEV_NVLINK_ECC_DATA_ERROR_COUNT_L6 154     //!< NVLink data ECC Error Counter for Link 6
+#define NVML_FI_DEV_NVLINK_ECC_DATA_ERROR_COUNT_L7 155     //!< NVLink data ECC Error Counter for Link 7
+#define NVML_FI_DEV_NVLINK_ECC_DATA_ERROR_COUNT_L8 156     //!< NVLink data ECC Error Counter for Link 8
+#define NVML_FI_DEV_NVLINK_ECC_DATA_ERROR_COUNT_L9 157     //!< NVLink data ECC Error Counter for Link 9
+#define NVML_FI_DEV_NVLINK_ECC_DATA_ERROR_COUNT_L10 158    //!< NVLink data ECC Error Counter for Link 10
+#define NVML_FI_DEV_NVLINK_ECC_DATA_ERROR_COUNT_L11 159    //!< NVLink data ECC Error Counter for Link 11
+#define NVML_FI_DEV_NVLINK_ECC_DATA_ERROR_COUNT_TOTAL 160  //!< NVLink data ECC Error Counter total for all Links
+
+#define NVML_FI_DEV_NVLINK_ERROR_DL_REPLAY 161    //!< NVLink Replay Error Counter
+#define NVML_FI_DEV_NVLINK_ERROR_DL_RECOVERY 162  //!< NVLink Recovery Error Counter
+#define NVML_FI_DEV_NVLINK_ERROR_DL_CRC 163       //!< NVLink CRC Error Counter
+#define NVML_FI_DEV_NVLINK_GET_SPEED 164          //!< NVLink Speed in MBps
+#define NVML_FI_DEV_NVLINK_GET_STATE 165          //!< NVLink State - Active,Inactive
+#define NVML_FI_DEV_NVLINK_GET_VERSION 166        //!< NVLink Version
+
+#define NVML_FI_DEV_NVLINK_GET_POWER_STATE 167  //!< NVLink Power state. 0=HIGH_SPEED 1=LOW_SPEED
+#define NVML_FI_DEV_NVLINK_GET_POWER_THRESHOLD \
+    168  //!< NVLink length of idle period (in units of 100us) before transitioning links to sleep state
+
+#define NVML_FI_DEV_PCIE_L0_TO_RECOVERY_COUNTER 169  //!< Device PEX error recovery counter
+
+#define NVML_FI_DEV_C2C_LINK_COUNT 170       //!< Number of C2C Links present on the device
+#define NVML_FI_DEV_C2C_LINK_GET_STATUS 171  //!< C2C Link Status 0=INACTIVE 1=ACTIVE
+#define NVML_FI_DEV_C2C_LINK_GET_MAX_BW 172  //!< C2C Link Speed in MBps for active links
+
+#define NVML_FI_DEV_PCIE_COUNT_CORRECTABLE_ERRORS 173
+#define NVML_FI_DEV_PCIE_COUNT_NAKS_RECEIVED 174
+#define NVML_FI_DEV_PCIE_COUNT_RECEIVER_ERROR 175
+#define NVML_FI_DEV_PCIE_COUNT_BAD_TLP 176
+#define NVML_FI_DEV_PCIE_COUNT_NAKS_SENT 177
+#define NVML_FI_DEV_PCIE_COUNT_BAD_DLLP 178
+#define NVML_FI_DEV_PCIE_COUNT_NON_FATAL_ERROR 179
+#define NVML_FI_DEV_PCIE_COUNT_FATAL_ERROR 180
+#define NVML_FI_DEV_PCIE_COUNT_UNSUPPORTED_REQ 181
+#define NVML_FI_DEV_PCIE_COUNT_LCRC_ERROR 182
+#define NVML_FI_DEV_PCIE_COUNT_LANE_ERROR 183
+
+#define NVML_FI_DEV_IS_RESETLESS_MIG_SUPPORTED 184
+
+/**
+ * Retrieves power usage for this GPU in milliwatts.
+ * It is only available if power management mode is supported. See \ref nvmlDeviceGetPowerManagementMode and
+ * \ref nvmlDeviceGetPowerUsage.
+ *
+ * scopeId needs to be specified. It signifies:
+ * 0 - GPU Only Scope - Metrics for GPU are retrieved
+ * 1 - Module scope - Metrics for the module (e.g. CPU + GPU) are retrieved.
+ * Note: CPU here refers to NVIDIA CPU (e.g. Grace). x86 or non-NVIDIA ARM is not supported
+ */
+#define NVML_FI_DEV_POWER_AVERAGE \
+    185  //!< GPU power averaged over 1 sec interval, supported on Ampere (except GA100) or newer architectures.
+#define NVML_FI_DEV_POWER_INSTANT 186        //!< Current GPU power, supported on all architectures.
+#define NVML_FI_DEV_POWER_MIN_LIMIT 187      //!< Minimum power limit in milliwatts.
+#define NVML_FI_DEV_POWER_MAX_LIMIT 188      //!< Maximum power limit in milliwatts.
+#define NVML_FI_DEV_POWER_DEFAULT_LIMIT 189  //!< Default power limit in milliwatts (limit which device boots with).
+#define NVML_FI_DEV_POWER_CURRENT_LIMIT \
+    190  //!< Limit currently enforced in milliwatts (This includes other limits set elsewhere. E.g. Out-of-band).
+#define NVML_FI_DEV_ENERGY \
+    191  //!< Total energy consumption (in mJ) since the driver was last reloaded. Same as \ref
+         //!< NVML_FI_DEV_TOTAL_ENERGY_CONSUMPTION for the GPU.
+#define NVML_FI_DEV_POWER_REQUESTED_LIMIT 192  //!< Power limit requested by NVML or any other userspace client.
+
+/**
+ * GPU T.Limit temperature thresholds in degree Celsius
+ *
+ * These fields are supported on Ada and later architectures and supersedes \ref nvmlDeviceGetTemperatureThreshold.
+ */
+#define NVML_FI_DEV_TEMPERATURE_SHUTDOWN_TLIMIT \
+    193  //!< T.Limit temperature after which GPU may shut down for HW protection
+#define NVML_FI_DEV_TEMPERATURE_SLOWDOWN_TLIMIT 194  //!< T.Limit temperature after which GPU may begin HW slowdown
+#define NVML_FI_DEV_TEMPERATURE_MEM_MAX_TLIMIT \
+    195  //!< T.Limit temperature after which GPU may begin SW slowdown due to memory temperature
+#define NVML_FI_DEV_TEMPERATURE_GPU_MAX_TLIMIT \
+    196  //!< T.Limit temperature after which GPU may be throttled below base clock
+
+#define NVML_FI_DEV_IS_MIG_MODE_INDEPENDENT_MIG_QUERY_CAPABLE \
+    199  //!< MIG mode independent, MIG query capable device. 1=yes. 0=no.
+
+#define NVML_FI_MAX 200  //!< One greater than the largest field ID defined above
+
+/**
  * Information for a Field Value Sample
  */
 typedef struct nvmlFieldValue_st {
@@ -782,6 +1105,46 @@ typedef enum nvmlGpuVirtualizationMode {
     NVML_GPU_VIRTUALIZATION_MODE_HOST_VSGA = 4,    //!< Device is associated with VGX hypervisor in vSGA mode
 } nvmlGpuVirtualizationMode_t;
 
+
+#define nvmlEventTypeSingleBitEccError 0x0000000000000001LL
+
+//! Event about double bit ECC errors
+/**
+ * \note An uncorrected texture memory error is not an ECC error, so it does not generate a double bit event
+ */
+#define nvmlEventTypeDoubleBitEccError 0x0000000000000002LL
+
+//! Event about PState changes
+/**
+ *  \note On Fermi architecture PState changes are also an indicator that GPU is throttling down due to
+ *  no work being executed on the GPU, power capping or thermal capping. In a typical situation,
+ *  Fermi-based GPU should stay in P0 for the duration of the execution of the compute process.
+ */
+#define nvmlEventTypePState 0x0000000000000004LL
+
+//! Event that Xid critical error occurred
+#define nvmlEventTypeXidCriticalError 0x0000000000000008LL
+
+//! Event about clock changes
+/**
+ * Kepler only
+ */
+#define nvmlEventTypeClock 0x0000000000000010LL
+
+//! Event about AC/Battery power source changes
+#define nvmlEventTypePowerSourceChange 0x0000000000000080LL
+
+//! Event about MIG configuration changes
+#define nvmlEventMigConfigChange 0x0000000000000100LL
+
+//! Mask with no events
+#define nvmlEventTypeNone 0x0000000000000000LL
+
+//! Mask of all events
+#define nvmlEventTypeAll                                                                                         \
+    (nvmlEventTypeNone | nvmlEventTypeSingleBitEccError | nvmlEventTypeDoubleBitEccError | nvmlEventTypePState | \
+     nvmlEventTypeClock | nvmlEventTypeXidCriticalError | nvmlEventTypePowerSourceChange | nvmlEventMigConfigChange)
+/** @} */
 /**
  * Handle to an event set
  */

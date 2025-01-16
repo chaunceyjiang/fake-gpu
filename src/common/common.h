@@ -66,6 +66,33 @@ struct RAM {
         ram.used = node["used"].as<unsigned long long>();
     }
 };
+
+struct GPU_Util {
+    unsigned int gpu;
+    unsigned int memory;
+
+    friend void operator>>(const YAML::Node &node, GPU_Util &util) {
+        util.gpu = node["gpu"].as<unsigned int>();
+        util.memory = node["memory"].as<unsigned int>();
+    }
+};
+
+struct GPU_Power {
+    unsigned int usage;
+    unsigned int default_limit;
+    unsigned int min_limit;
+    unsigned int max_limit;
+    unsigned int enforced_limit;
+
+    friend void operator>>(const YAML::Node &node, GPU_Power &power) {
+        power.usage = node["usage"].as<unsigned int>();
+        power.default_limit = node["defaultLimit"].as<unsigned int>();
+        power.min_limit = node["minLimit"].as<unsigned int>();
+        power.max_limit = node["maxLimit"].as<unsigned int>();
+        power.enforced_limit = node["enforcedLimit"].as<unsigned int>();
+    }
+};
+
 // GPU struct
 struct GPU {
     std::string name;
@@ -75,8 +102,13 @@ struct GPU {
     std::string brand;
     int cuda_version;
     int cuda_cores;
+    std::string vbios_version;
+    std::string image_version;
+    std::string serial;
     RAM memory;
     PCI pci;
+    GPU_Power power;
+    GPU_Util utilization;
     NVLink nvlink;
     MIG mig;
     EventList events;
@@ -87,7 +119,12 @@ struct GPU {
         gpu.brand = node["brand"].as<std::string>();
         gpu.cuda_version = node["cuda_version"].as<int>();
         gpu.cuda_cores = node["cuda_cores"].as<int>();
+        gpu.vbios_version = node["vbios_version"].as<std::string>();
+        gpu.image_version = node["image_version"].as<std::string>();
+        gpu.serial = node["serial"].as<std::string>();
         node["pci"] >> gpu.pci;
+        node["power"] >> gpu.power;
+        node["utilization"] >> gpu.utilization;
         node["nvlink"] >> gpu.nvlink;
         node["mig"] >> gpu.mig;
         node["memory"] >> gpu.memory;

@@ -5,6 +5,18 @@ nvidia:
     brand: Tesla
     cuda_version: 12020
     cuda_cores: 2560
+    vbios_version: 90.04.1F.00.01
+    image_version: 1.2
+    serial: 0320119123456
+    power:
+      minLimit: 200000
+      maxLimit: 850000
+      defaultLimit: 450000
+      enforcedLimit: 450000
+      usage: 250000
+    utilization:
+      gpu: 0
+      memory: 0
     memory:
       total: 16160000000
       free: 16160000000
@@ -33,6 +45,18 @@ nvidia:
     brand: Tesla
     cuda_version: 12020
     cuda_cores: 2560
+    vbios_version: 90.04.1F.00.02
+    image_version: 1.2
+    serial: 12567890ABCDEF
+    power:
+      minLimit: 200000
+      maxLimit: 850000
+      defaultLimit: 450000
+      enforcedLimit: 450000
+      usage: 250000
+    utilization:
+      gpu: 0
+      memory: 0
     memory:
       total: 16160000000
       free: 16160000000
@@ -55,3 +79,5 @@ nvidia:
       eventData: 43
     - eventType: 8
       eventData: 31
+    dcgm:
+    

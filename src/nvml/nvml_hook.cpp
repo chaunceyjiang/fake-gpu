@@ -348,7 +348,9 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetIndex(nvmlDevice_t device,
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetSerial(nvmlDevice_t device, char *serial, unsigned int length) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetSerial");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    gpu->uuid.copy(serial, length);
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetMemoryAffinity(nvmlDevice_t device, unsigned int nodeSetSize,
@@ -454,7 +456,9 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetInforomVersion(nvmlDevice_
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetInforomImageVersion(nvmlDevice_t device, char *version,
                                                                           unsigned int length) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetInforomImageVersion");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    gpu->image_version.copy(version, length);
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetInforomConfigurationChecksum(nvmlDevice_t device,
@@ -480,7 +484,8 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetDisplayActive(nvmlDevice_t
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetPersistenceMode(nvmlDevice_t device, nvmlEnableState_t *mode) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetPersistenceMode");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    *mode = NVML_FEATURE_DISABLED;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetPciInfo_v3(nvmlDevice_t device, nvmlPciInfo_t *pci) {
@@ -500,13 +505,15 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetPciInfo_v3(nvmlDevice_t de
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetMaxPcieLinkGeneration(nvmlDevice_t device,
                                                                             unsigned int *maxLinkGen) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetMaxPcieLinkGeneration");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    *maxLinkGen = 2;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetMaxPcieLinkWidth(nvmlDevice_t device,
                                                                        unsigned int *maxLinkWidth) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetMaxPcieLinkWidth");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    *maxLinkWidth = 16;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetCurrPcieLinkGeneration(nvmlDevice_t device,
@@ -529,7 +536,7 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetPcieThroughput(nvmlDevice_
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetPcieReplayCounter(nvmlDevice_t device, unsigned int *value) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetPcieReplayCounter");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    return NVML_ERROR_NOT_SUPPORTED;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetClockInfo(nvmlDevice_t device, nvmlClockType_t type,
@@ -578,7 +585,13 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetMaxCustomerBoostClock(nvml
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetSupportedMemoryClocks(nvmlDevice_t device, unsigned int *count,
                                                                             unsigned int *clocksMHz) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetSupportedMemoryClocks");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    if (clocksMHz == NULL) {
+        *count = 2;
+    } else {
+        clocksMHz[0] = 3505;
+        clocksMHz[1] = 5005;
+    }
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetSupportedGraphicsClocks(nvmlDevice_t device,
@@ -631,7 +644,23 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetTemperatureThreshold(nvmlD
                                                                            nvmlTemperatureThresholds_t thresholdType,
                                                                            unsigned int *temp) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetTemperatureThreshold");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    switch (thresholdType) {
+        case NVML_TEMPERATURE_THRESHOLD_SHUTDOWN:
+            *temp = 100;
+            break;
+        case NVML_TEMPERATURE_THRESHOLD_SLOWDOWN:
+            *temp = 90;
+            break;
+        case NVML_TEMPERATURE_THRESHOLD_MEM_MAX:
+            *temp = 95;
+            break;
+        case NVML_TEMPERATURE_THRESHOLD_GPU_MAX:
+            *temp = 100;
+            break;
+        default:
+            return NVML_ERROR_INVALID_ARGUMENT;
+    }
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceSetTemperatureThreshold(nvmlDevice_t device,
@@ -678,18 +707,25 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetPowerManagementLimitConstr
                                                                                       unsigned int *minLimit,
                                                                                       unsigned int *maxLimit) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetPowerManagementLimitConstraints");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    *minLimit = gpu->power.min_limit;
+    *maxLimit = gpu->power.max_limit;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetPowerManagementDefaultLimit(nvmlDevice_t device,
                                                                                   unsigned int *defaultLimit) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetPowerManagementDefaultLimit");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    *defaultLimit = gpu->power.default_limit;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetPowerUsage(nvmlDevice_t device, unsigned int *power) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetPowerUsage");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    *power = gpu->power.usage;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetTotalEnergyConsumption(nvmlDevice_t device,
@@ -700,7 +736,9 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetTotalEnergyConsumption(nvm
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetEnforcedPowerLimit(nvmlDevice_t device, unsigned int *limit) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetEnforcedPowerLimit");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    *limit = gpu->power.enforced_limit;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetGpuOperationMode(nvmlDevice_t device,
@@ -806,7 +844,10 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetMemoryErrorCounter(nvmlDev
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetUtilizationRates(nvmlDevice_t device,
                                                                        nvmlUtilization_t *utilization) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetUtilizationRates");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    utilization->gpu = gpu->utilization.gpu;
+    utilization->memory = gpu->utilization.memory;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetEncoderUtilization(nvmlDevice_t device, unsigned int *utilization,
@@ -861,7 +902,9 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetDriverModel(nvmlDevice_t d
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetVbiosVersion(nvmlDevice_t device, char *version,
                                                                    unsigned int length) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetVbiosVersion");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    gpu->vbios_version.copy(version, length);
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetBridgeChipInfo(nvmlDevice_t device,
@@ -914,7 +957,10 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetSamples(nvmlDevice_t devic
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetBAR1MemoryInfo(nvmlDevice_t device,
                                                                      nvmlBAR1Memory_t *bar1Memory) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetBAR1MemoryInfo");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    bar1Memory->bar1Total = 134217728;
+    bar1Memory->bar1Free = 67108864;
+    bar1Memory->bar1Used = 134217728 - 67108864;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetViolationStatus(nvmlDevice_t device,
@@ -1265,13 +1311,19 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceDiscoverGpus(nvmlPciInfo_t *p
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetFieldValues(nvmlDevice_t device, int valuesCount,
                                                                   nvmlFieldValue_t *values) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetFieldValues");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    for (int i = 0; i < valuesCount; i++) {
+        HLOG_DEBUG("nvmlDeviceGetFieldValues: %s %d", reinterpret_cast<GPU *>(device)->uuid.c_str(),
+                   values[i].fieldId);
+        values[i].nvmlReturn = NVML_ERROR_NOT_SUPPORTED;
+    }
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetVirtualizationMode(nvmlDevice_t device,
                                                                          nvmlGpuVirtualizationMode_t *pVirtualMode) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetVirtualizationMode");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    *pVirtualMode = NVML_GPU_VIRTUALIZATION_MODE_PASSTHROUGH;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetHostVgpuMode(nvmlDevice_t device,
@@ -1303,7 +1355,8 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetProcessUtilization(nvmlDev
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetSupportedVgpus(nvmlDevice_t device, unsigned int *vgpuCount,
                                                                      nvmlVgpuTypeId_t *vgpuTypeIds) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetSupportedVgpus");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    *vgpuCount = 0;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetCreatableVgpus(nvmlDevice_t device, unsigned int *vgpuCount,
@@ -1557,7 +1610,9 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlVgpuInstanceClearAccountingPids(nvm
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlGetExcludedDeviceCount(unsigned int *deviceCount) {
     HOOK_TRACE_PROFILE("nvmlGetExcludedDeviceCount");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    // return 0 for now
+    *deviceCount = 0;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlGetExcludedDeviceInfoByIndex(unsigned int index,
