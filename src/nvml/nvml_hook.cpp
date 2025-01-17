@@ -1313,10 +1313,10 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetFieldValues(nvmlDevice_t d
     HOOK_TRACE_PROFILE("nvmlDeviceGetFieldValues");
     auto now = std::chrono::high_resolution_clock::now();
     auto duration = now.time_since_epoch();
-    bool found = false;
     auto timestamp = std::chrono::duration_cast<std::chrono::microseconds>(duration).count();
     GPU *gpu = reinterpret_cast<GPU *>(device);
     for (int i = 0; i < valuesCount; i++) {
+        bool found = false;
         for (std::vector<DCGM_Field>::size_type j = 0; j < gpu->dcgm.fields.size(); j++) {
             if (gpu->dcgm.fields[j].fieldId == values[i].fieldId) {
                 values[i].valueType = static_cast<nvmlValueType_t>(gpu->dcgm.fields[j].fieldType);
