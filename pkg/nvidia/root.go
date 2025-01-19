@@ -185,8 +185,8 @@ func run() error {
 	t.AppendRow(table.Row{" GPU   GI   CI        PID   Type   Process name                             GPU Memory"})
 	t.AppendRow(table.Row{"       ID   ID                                                              Usage     "})
 	t.AppendSeparator()
-	for _, p := range process {
-		t.AppendRow(table.Row{fmt.Sprintf(" %s   %s%s%s%s   %s %s", sizeString(strconv.Itoa(1), 3, true), sizeString("N/A", 5, false), sizeString("N/A", 10, false), sizeString(strconv.Itoa(int(p.PID)), 6, false), sizeString("G", 4, true), sizeString(p.Name, 29, false), sizeString(fmt.Sprintf("%dMiB", int(p.UsedMem/1024/1024)), 22, true))})
+	for index, p := range process {
+		t.AppendRow(table.Row{fmt.Sprintf(" %s   %s%s%s%s   %s %s", sizeString(strconv.Itoa(index), 3, true), sizeString("N/A", 5, false), sizeString("N/A", 10, false), sizeString(strconv.Itoa(int(p.PID)), 6, false), sizeString("G", 4, true), sizeString(p.Name, 29, false), sizeString(fmt.Sprintf("%dMiB", int(p.UsedMem/1024/1024)), 22, true))})
 	}
 	t.Render()
 	return nil
