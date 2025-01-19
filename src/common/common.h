@@ -63,7 +63,6 @@ struct RAM {
     friend void operator>>(const YAML::Node &node, RAM &ram) {
         ram.total = node["total"].as<unsigned long long>();
         ram.free = node["free"].as<unsigned long long>();
-        ram.used = node["used"].as<unsigned long long>();
     }
 };
 

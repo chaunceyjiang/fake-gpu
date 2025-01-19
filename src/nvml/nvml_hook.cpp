@@ -1,6 +1,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include <chrono>
+#include <fstream>
 #include <iostream>
 #include <mutex>
 #include <random>
@@ -78,6 +79,7 @@ void init() {
     }
     for (std::vector<GPU>::size_type i = 0; i < nvidia_gpus.size(); i++) {
         nvidia_gpus[i].index = i;
+        nvidia_gpus[i].memory.used = nvidia_gpus[i].memory.free * nvidia_gpus[i].utilization.memory / 100;
     }
     HLOG_DEBUG("Fake GPU initialized");
     HLOG_DEBUG("Number of NVIDIA GPUs: %ld", nvidia_gpus.size());
@@ -918,7 +920,20 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetComputeRunningProcesses_v2
                                                                                  unsigned int *infoCount,
                                                                                  nvmlProcessInfo_t *infos) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetComputeRunningProcesses_v2");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    std::ifstream procFile("/proc/1/cmdline");
+    if (!procFile.is_open()) {
+        HLOG_DEBUG("Failed to open /proc/1/cmdline");
+        return NVML_SUCCESS;
+    }
+
+    std::string cmdline;
+    std::getline(procFile, cmdline);
+    HLOG_DEBUG("Command line: %s", cmdline.c_str());
+    procFile.close();
+    infos[0].pid = 1;
+    infos[0].usedGpuMemory = gpu->memory.used;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetGraphicsRunningProcesses_v2(nvmlDevice_t device,
@@ -1886,7 +1901,16 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetComputeRunningProcesses(nv
                                                                               unsigned int *infoCount,
                                                                               nvmlProcessInfo_v1_t *infos) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetComputeRunningProcesses");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    std::ifstream procFile("/proc/1/cmdline");
+    if (!procFile.is_open()) {
+        HLOG_DEBUG("Failed to open /proc/1/cmdline");
+        return NVML_SUCCESS;
+    }
+    procFile.close();
+    infos[0].pid = 1;
+    infos[0].usedGpuMemory = gpu->memory.used;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetGraphicsRunningProcesses(nvmlDevice_t device,

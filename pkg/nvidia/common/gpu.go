@@ -20,7 +20,6 @@ type GPU struct {
 
 type Process struct {
 	Name    string
-	PID     int
-	GPU     int
-	UsedMem int
+	PID     uint32
+	UsedMem uint64
 }

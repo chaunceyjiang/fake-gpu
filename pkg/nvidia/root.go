@@ -107,6 +107,7 @@ func run() error {
 	// convert dricudaDriverVersionver version to string
 	cudaVersion := fmt.Sprintf("%d.%d", cudaDriverVersion/1000, (cudaDriverVersion%1000)/10)
 	var gpus []common.GPU
+	var process []common.Process
 	for i := 0; i < count; i++ {
 		gpu := common.GPU{}
 		device, ret := nvml.DeviceGetHandleByIndex(i)
@@ -142,6 +143,23 @@ func run() error {
 		gpu.TotalMem = mem.Total
 		gpu.UsedMem = mem.Used
 		gpus = append(gpus, gpu)
+		processInfo, ret := device.GetComputeRunningProcesses()
+		if ret != nvml.SUCCESS {
+			log.Fatalf("Unable to get process info of device at index %d: %v", i, nvml.ErrorString(ret))
+		}
+		for _, p := range processInfo {
+			process = append(process, common.Process{
+				PID:     p.Pid,
+				UsedMem: p.UsedGpuMemory,
+			})
+		}
+	}
+	for i, p := range process {
+		processName, err := os.ReadFile(fmt.Sprintf("/proc/%d/cmdline", p.PID))
+		if err != nil {
+			log.Fatalf("Unable to get process name of pid %d: %v", p.PID, err)
+		}
+		process[i].Name = string(processName)
 	}
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
@@ -167,8 +185,9 @@ func run() error {
 	t.AppendRow(table.Row{" GPU   GI   CI        PID   Type   Process name                            GPU Memory"})
 	t.AppendRow(table.Row{"       ID   ID                                                             Usage     "})
 	t.AppendSeparator()
-	// t.AppendRow(table.Row{fmt.Sprintf(" %s   %s%s%s%s   %s %s", sizeString(strconv.Itoa(args.GpuIdx), 3, true), sizeString("N/A", 5, false), sizeString("N/A", 10, false), sizeString(strconv.Itoa(os.Getpid()), 6, false), sizeString("G", 4, true), sizeString(args.ProcessName, 29, false), sizeString(fmt.Sprintf("%dMiB", int(args.GpuUsedMem)), 11, true))})
-	t.AppendRow(table.Row{fmt.Sprintf(" %s   %s%s%s%s   %s %s", sizeString(strconv.Itoa(1), 3, true), sizeString("N/A", 5, false), sizeString("N/A", 10, false), sizeString(strconv.Itoa(os.Getpid()), 6, false), sizeString("G", 4, true), sizeString("/usr/local/nginx", 29, false), sizeString(fmt.Sprintf("%dMiB", int(3200)), 20, true))})
+	for _, p := range process {
+		t.AppendRow(table.Row{fmt.Sprintf(" %s   %s   %s   %s   %s   %s", sizeString(strconv.Itoa(1), 3, true), sizeString("N/A", 5, false), sizeString("N/A", 5, false), sizeString(strconv.Itoa(int(p.PID)), 8, false), sizeString("C", 3, true), sizeString(p.Name, 43, false)), sizeString(fmt.Sprintf("%dMiB", int(p.UsedMem)), 9, true)})
+	}
 	t.Render()
 	return nil
 }

@@ -15,12 +15,11 @@ nvidia:
       enforcedLimit: 450000
       usage: 250000
     utilization:
-      gpu: 0
-      memory: 0
+      gpu: 15
+      memory: 15
     memory:
       total: 16160000000
       free: 16160000000
-      used: 0
     pci:
       bus_id: 0000:00:1E.0
       device_id: 1234
@@ -94,7 +93,6 @@ nvidia:
     memory:
       total: 16160000000
       free: 16160000000
-      used: 0
     pci:
       bus_id: 0000:00:1E.1
       device_id: 1234
