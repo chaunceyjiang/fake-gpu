@@ -933,6 +933,7 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetComputeRunningProcesses_v2
     procFile.close();
     infos[0].pid = 1;
     infos[0].usedGpuMemory = gpu->memory.used;
+    *infoCount = 1;
     return NVML_SUCCESS;
 }
 
@@ -1395,7 +1396,12 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetProcessUtilization(nvmlDev
                                                                          unsigned int *processSamplesCount,
                                                                          unsigned long long lastSeenTimeStamp) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetProcessUtilization");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    *processSamplesCount = 1;
+    utilization->pid = 1;
+    utilization->smUtil = gpu->utilization.gpu;
+    utilization->memUtil = gpu->utilization.memory;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetSupportedVgpus(nvmlDevice_t device, unsigned int *vgpuCount,
