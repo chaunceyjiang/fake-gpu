@@ -41,11 +41,9 @@ void init() {
         // print the GPU information
         HLOG_DEBUG("GPU Name: %s, UUID: %s", gpu.name.c_str(), gpu.uuid.c_str());
     }
-    // for each GPU, set the index
-    for (std::vector<GPU>::size_type i = 0; i < nvidia_gpus.size(); i++) {
-        nvidia_gpus[i].index = i;
-        // if gpu_suffix is set , uuid add gpu_suffix
-        if (gpu_suffix != NULL) {
+    // if gpu_suffix is set , uuid add gpu_suffix
+    if (gpu_suffix != NULL) {
+        for (std::vector<GPU>::size_type i = 0; i < nvidia_gpus.size(); i++) {
             nvidia_gpus[i].uuid = nvidia_gpus[i].uuid + "-" + gpu_suffix;
             HLOG_DEBUG("GPU Name: %s, UUID with suffix: %s", nvidia_gpus[i].name.c_str(), nvidia_gpus[i].uuid.c_str());
         }
@@ -77,6 +75,9 @@ void init() {
             }
         }
         nvidia_gpus = newGpus;
+    }
+    for (std::vector<GPU>::size_type i = 0; i < nvidia_gpus.size(); i++) {
+        nvidia_gpus[i].index = i;
     }
     HLOG_DEBUG("Fake GPU initialized");
     HLOG_DEBUG("Number of NVIDIA GPUs: %ld", nvidia_gpus.size());
