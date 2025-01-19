@@ -119,19 +119,19 @@ struct DCGM_Field {
         field.fieldId = node["fieldId"].as<unsigned int>();
         field.fieldName = node["fieldName"].as<std::string>();
         if (node["fieldType"].as<std::string>() == "double") {
-            field.value.dVal = node["value"].as<double>();
+            field.value.dVal = node["fieldValue"].as<double>();
             field.fieldType = DOUBLE;
         } else if (node["fieldType"].as<std::string>() == "unsigned int") {
-            field.value.uiVal = node["value"].as<unsigned int>();
+            field.value.uiVal = node["fieldValue"].as<unsigned int>();
             field.fieldType = UNSIGNED_INT;
         } else if (node["fieldType"].as<std::string>() == "unsigned long") {
-            field.value.ulVal = node["value"].as<unsigned long>();
+            field.value.ulVal = node["fieldValue"].as<unsigned long>();
             field.fieldType = UNSIGNED_LONG;
         } else if (node["fieldType"].as<std::string>() == "unsigned long long") {
-            field.value.ullVal = node["value"].as<unsigned long long>();
+            field.value.ullVal = node["fieldValue"].as<unsigned long long>();
             field.fieldType = UNSIGNED_LONG_LONG;
         } else if (node["fieldType"].as<std::string>() == "signed long long") {
-            field.value.sllVal = node["value"].as<signed long long>();
+            field.value.sllVal = node["fieldValue"].as<signed long long>();
             field.fieldType = SIGNED_LONG_LONG;
         }
     }
