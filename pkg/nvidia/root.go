@@ -186,7 +186,7 @@ func run() error {
 	t.AppendRow(table.Row{"       ID   ID                                                              Usage     "})
 	t.AppendSeparator()
 	for index, p := range process {
-		t.AppendRow(table.Row{fmt.Sprintf(" %s   %s%s%s%s   %s %s", sizeString(strconv.Itoa(index), 3, true), sizeString("N/A", 5, false), sizeString("N/A", 10, false), sizeString(strconv.Itoa(int(p.PID)), 6, false), sizeString("G", 4, true), sizeString(p.Name, 29, false), sizeString(fmt.Sprintf("%dMiB", int(p.UsedMem/1024/1024)), 22, true))})
+		t.AppendRow(table.Row{fmt.Sprintf(" %s   %s%s%s%s   %s %s", sizeString(strconv.Itoa(index), 3, true), sizeString("N/A", 5, false), sizeString("N/A", 10, false), sizeString(strconv.Itoa(int(p.PID)), 6, false), sizeString("G", 4, true), sizeString(p.Name, 28, false), sizeString(fmt.Sprintf("%dMiB", int(p.UsedMem/1024/1024)), 22, true))})
 	}
 	t.Render()
 	return nil
