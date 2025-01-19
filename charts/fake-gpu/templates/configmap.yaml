@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fake-gpu-config
+data:
+  fake-gpu.yaml: |-
+    {{ tpl (.Files.Get "fake-gpu.yaml") . | indent 4 }}
