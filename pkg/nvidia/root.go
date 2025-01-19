@@ -165,13 +165,13 @@ func run() error {
 	t.SetOutputMirror(os.Stdout)
 	t.SetTitle(fmt.Sprintf("NVIDIA-SMI 470.129.06           Driver Version: %s          CUDA Version: %s", driverVersion, cudaVersion))
 	t.AppendSeparator()
-	t.AppendRow(table.Row{"GPU  Name        Persistence-M", "Bus-Id        Disp.A", "Volatile Uncorr. ECC"})
-	t.AppendRow(table.Row{"Fan  Temp  Perf  Pwr:Usage/Cap", "        Memory-Usage", "GPU-Util  Compute M."})
+	t.AppendRow(table.Row{"GPU  Nam                 Persistence-M", "Bus-Id        Disp.A", "Volatile Uncorr. ECC"})
+	t.AppendRow(table.Row{"Fan  Temp  Perf          Pwr:Usage/Cap", "        Memory-Usage", "GPU-Util  Compute M."})
 	t.AppendRow(table.Row{"", "", "              MIG M."})
 	t.AppendSeparator()
 	for _, gpu := range gpus {
-		t.AppendRow(table.Row{fmt.Sprintf("%s  %s%s", sizeString(strconv.Itoa(gpu.Idx), 3, true), sizeString(gpu.Name, 21, false), sizeString("Off", 13, true)), fmt.Sprintf("%s %s", sizeString(gpu.BusID, 16, false), sizeString("Off", 3, true)), sizeString("Off", 20, true)})
-		t.AppendRow(table.Row{"N/A   33C    P8    11W /  70W", sizeString(fmt.Sprintf("%dMiB / %dMiB", int(gpu.UsedMem/1024/1024), gpu.TotalMem/1024/1024), 20, true), fmt.Sprintf("%s %s", sizeString(strconv.Itoa(gpu.Util)+"%", 8, true), sizeString("Default", 11, true))})
+		t.AppendRow(table.Row{fmt.Sprintf("%s  %s%s", sizeString(strconv.Itoa(gpu.Idx), 3, true), sizeString(gpu.Name, 22, false), sizeString("Off", 13, true)), fmt.Sprintf("%s %s", sizeString(gpu.BusID, 16, false), sizeString("Off", 3, true)), sizeString("Off", 20, true)})
+		t.AppendRow(table.Row{"N/A   33C    P8               11W /  70W", sizeString(fmt.Sprintf("%dMiB / %dMiB", int(gpu.UsedMem/1024/1024), gpu.TotalMem/1024/1024), 20, true), fmt.Sprintf("%s %s", sizeString(strconv.Itoa(gpu.Util)+"%", 8, true), sizeString("Default", 11, true))})
 	}
 	t.AppendRow(table.Row{"", "", sizeString("N/A", 20, true)})
 	t.AppendSeparator()
@@ -182,11 +182,11 @@ func run() error {
 	t = table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
 	t.AppendRow(table.Row{"Processes:"})
-	t.AppendRow(table.Row{" GPU   GI   CI        PID   Type   Process name                            GPU Memory"})
-	t.AppendRow(table.Row{"       ID   ID                                                             Usage     "})
+	t.AppendRow(table.Row{" GPU   GI   CI        PID   Type   Process name                             GPU Memory"})
+	t.AppendRow(table.Row{"       ID   ID                                                              Usage     "})
 	t.AppendSeparator()
 	for _, p := range process {
-		t.AppendRow(table.Row{fmt.Sprintf(" %s   %s   %s   %s   %s   %s", sizeString(strconv.Itoa(1), 3, true), sizeString("N/A", 5, false), sizeString("N/A", 5, false), sizeString(strconv.Itoa(int(p.PID)), 8, false), sizeString("C", 3, true), sizeString(p.Name, 43, false)), sizeString(fmt.Sprintf("%dMiB", int(p.UsedMem)), 9, true)})
+		t.AppendRow(table.Row{fmt.Sprintf(" %s   %s%s%s%s   %s %s", sizeString(strconv.Itoa(1), 3, true), sizeString("N/A", 5, false), sizeString("N/A", 10, false), sizeString(strconv.Itoa(int(p.PID)), 6, false), sizeString("G", 4, true), sizeString(p.Name, 29, false), sizeString(fmt.Sprintf("%dMiB", int(p.UsedMem/1024/1024)), 22, true))})
 	}
 	t.Render()
 	return nil
