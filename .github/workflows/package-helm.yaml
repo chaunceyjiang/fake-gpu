@@ -78,6 +78,8 @@ jobs:
           echo "CHARTS_DIR=${CHARTS_DIR}"
           echo "GITHUB_REF_NAME=${GITHUB_REF_NAME}"
           echo "majmin=${majmin}"
+          mkdir -p $CHARTS_DIR/templates/files
+          cp conf/fake-gpu.yaml $CHARTS_DIR/templates/files/fake-gpu.yaml
           # Package charts
           CHART_VERSION="${majmin}-unstable"
           if [  $GITHUB_REF_NAME = "main" ]; then
