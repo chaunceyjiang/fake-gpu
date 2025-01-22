@@ -3,6 +3,7 @@ nvidia:
     uuid: GPU-abc
     driver_version: 540.33.01
     brand: Tesla
+    architecture: 6 # KEPLER 2, MAXWELL 3,PASCAL 4 ,VOLTA  5,TURING 6,,AMPERE 7 ,ADA 8,HOPPER 9 
     cuda_version: 12020
     cuda_cores: 2560
     vbios_version: 90.04.1F.00.01
@@ -31,6 +32,9 @@ nvidia:
       bandwidth: 25
       peer_gpu:
       - GPU-bcd
+    numa:
+      node: 0
+      cpu_affinity: 0-7,16-23
     mig:
       enabled: false
     events:
@@ -76,6 +80,7 @@ nvidia:
     uuid: GPU-bcd
     driver_version: 440.33.01
     brand: Tesla
+    architecture: 3 # KEPLER 2, MAXWELL 3,PASCAL 4 ,VOLTA  5,TURING 6,,AMPERE 7 ,ADA 8,HOPPER 9
     cuda_version: 12020
     cuda_cores: 2560
     vbios_version: 90.04.1F.00.02
@@ -104,6 +109,9 @@ nvidia:
       bandwidth: 25
       peer_gpu: 
       - GPU-abc
+    numa:
+      node: 1
+      cpu_affinity: 8-15,24-31
     mig:
       enabled: false
     events:

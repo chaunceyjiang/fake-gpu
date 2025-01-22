@@ -1420,6 +1420,10 @@ typedef struct nvmlDeviceAttributes_st {
     unsigned int sharedJpegCount;        //!< Shared JPEG Engine count
     unsigned int sharedOfaCount;         //!< Shared OFA Engine count
 } nvmlDeviceAttributes_t;
+//! Scope of NUMA node for affinity queries
+#define NVML_AFFINITY_SCOPE_NODE 0
+//! Scope of processor socket for affinity queries
+#define NVML_AFFINITY_SCOPE_SOCKET 1
 
 typedef unsigned int nvmlAffinityScope_t;
 

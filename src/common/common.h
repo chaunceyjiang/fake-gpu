@@ -36,6 +36,16 @@ struct NVLink {
         }
     }
 };
+
+struct NUMA {
+    int node;
+    std::string cpu_affinity;
+
+    friend void operator>>(const YAML::Node &node, NUMA &numa) {
+        numa.node = node["node"].as<int>();
+        numa.cpu_affinity = node["cpu_affinity"].as<std::string>();
+    }
+};
 struct MIG {
     bool enabled;
 
@@ -155,6 +165,7 @@ struct GPU {
     std::string uuid;
     std::string driver_version;
     std::string brand;
+    unsigned int arch;
     int cuda_version;
     int cuda_cores;
     std::string vbios_version;
@@ -162,6 +173,7 @@ struct GPU {
     std::string serial;
     RAM memory;
     PCI pci;
+    NUMA numa;
     GPU_Power power;
     GPU_Util utilization;
     NVLink nvlink;
@@ -173,6 +185,7 @@ struct GPU {
         gpu.uuid = node["uuid"].as<std::string>();
         gpu.driver_version = node["driver_version"].as<std::string>();
         gpu.brand = node["brand"].as<std::string>();
+        gpu.arch = node["architecture"].as<unsigned int>();
         gpu.cuda_version = node["cuda_version"].as<int>();
         gpu.cuda_cores = node["cuda_cores"].as<int>();
         gpu.vbios_version = node["vbios_version"].as<std::string>();
@@ -183,6 +196,7 @@ struct GPU {
         node["utilization"] >> gpu.utilization;
         node["nvlink"] >> gpu.nvlink;
         node["mig"] >> gpu.mig;
+        node["numa"] >> gpu.numa;
         node["memory"] >> gpu.memory;
         // if events is not empty, strore all events to events
         if (node["events"]) {

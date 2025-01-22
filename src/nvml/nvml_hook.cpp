@@ -360,7 +360,12 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetMemoryAffinity(nvmlDevice_
                                                                      unsigned long *nodeSet,
                                                                      nvmlAffinityScope_t scope) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetMemoryAffinity");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    if (scope != NVML_AFFINITY_SCOPE_NODE) {
+       return NVML_ERROR_NOT_SUPPORTED;
+    }
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    *nodeSet = 1 << gpu->numa.node;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetCpuAffinityWithinScope(nvmlDevice_t device,
@@ -374,7 +379,33 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetCpuAffinityWithinScope(nvm
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetCpuAffinity(nvmlDevice_t device, unsigned int cpuSetSize,
                                                                   unsigned long *cpuSet) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetCpuAffinity");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    std::string cpu_affinity = gpu->numa.cpu_affinity;
+    // cpu_affinity: 0-7,16-23
+    std::vector<std::string> cpu_affinity_list;
+    std::string::size_type pos = 0;
+    std::string::size_type prev = 0;
+    while ((pos = cpu_affinity.find(",", prev)) != std::string::npos) {
+        cpu_affinity_list.push_back(cpu_affinity.substr(prev, pos - prev));
+        prev = pos + 1;
+    }
+    cpu_affinity_list.push_back(cpu_affinity.substr(prev));
+    unsigned long cpuSetValue = 0;
+    for (std::vector<std::string>::size_type i = 0; i < cpu_affinity_list.size(); i++) {
+        std::string::size_type dash_pos = cpu_affinity_list[i].find("-");
+        if (dash_pos != std::string::npos) {
+            int start = std::stoi(cpu_affinity_list[i].substr(0, dash_pos));
+            int end = std::stoi(cpu_affinity_list[i].substr(dash_pos + 1));
+            for (int j = start; j <= end; j++) {
+                cpuSetValue |= 1 << j;
+            }
+        } else {
+            int cpu = std::stoi(cpu_affinity_list[i]);
+            cpuSetValue |= 1 << cpu;
+        }
+    }
+    cpuSet[0] = cpuSetValue;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceSetCpuAffinity(nvmlDevice_t device) {
@@ -1048,7 +1079,9 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetRowRemapperHistogram(nvmlD
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetArchitecture(nvmlDevice_t device,
                                                                    nvmlDeviceArchitecture_t *arch) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetArchitecture");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    *arch = gpu->arch;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlUnitSetLedState(nvmlUnit_t unit, nvmlLedColor_t color) {
@@ -1173,6 +1206,21 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetNvLinkCapability(nvmlDevic
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetNvLinkRemotePciInfo_v2(nvmlDevice_t device, unsigned int link,
                                                                              nvmlPciInfo_t *pci) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetNvLinkRemotePciInfo_v2");
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    if (link < gpu->nvlink.peer_gpus.size()) {
+        for (auto uuid : gpu->nvlink.peer_gpus) {
+            for (auto peer: nvidia_gpus) {
+                if (peer.uuid == uuid) {
+                    strncpy(pci->busId, peer.pci.bus_id.c_str(), NVML_DEVICE_PCI_BUS_ID_BUFFER_SIZE);
+                    pci->domain = peer.pci.domain_id;
+                    pci->device = peer.pci.device_id;
+                    pci->pciDeviceId = peer.pci.device_id;
+                    pci->pciSubSystemId = peer.pci.sub_system_id;
+                    return NVML_SUCCESS;
+                }
+            }
+        }
+    }
     return NVML_ERROR_INVALID_ARGUMENT;
 }
 
