@@ -5,7 +5,6 @@ go 1.22.0
 require (
 	github.com/NVIDIA/go-nvml v0.12.4-1
 	github.com/containerd/nri v0.9.0
-	github.com/fsnotify/fsnotify v1.8.0
 	github.com/jedib0t/go-pretty/v6 v6.6.5
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.1

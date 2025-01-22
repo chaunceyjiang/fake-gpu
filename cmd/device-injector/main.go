@@ -5,12 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/containerd/nri/pkg/api"
 	"github.com/containerd/nri/pkg/stub"
-	"github.com/fsnotify/fsnotify"
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 )
@@ -259,42 +257,6 @@ func main() {
 	p := &plugin{}
 	if p.stub, err = stub.New(p, opts...); err != nil {
 		log.Fatalf("failed to create plugin stub: %v", err)
-	}
-	if confPath != "" {
-		watcher, err := fsnotify.NewWatcher()
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer watcher.Close()
-		go func() {
-			for {
-				select {
-				case event, ok := <-watcher.Events:
-					if !ok {
-						return
-					}
-					log.Println("file event:", event)
-					file, err := os.ReadFile(confPath)
-					if err != nil {
-						log.Fatal(err)
-					}
-					err = os.WriteFile(filepath.Join(sourceHostPath, "fake-gpu.yaml"), file, 0755)
-					if err != nil {
-						log.Fatal(err)
-					}
-				case err, ok := <-watcher.Errors:
-					if !ok {
-						return
-					}
-					log.Println("file error:", err)
-				}
-			}
-		}()
-
-		err = watcher.Add(confPath)
-		if err != nil {
-			log.Fatal(err)
-		}
 	}
 	err = p.stub.Run(context.Background())
 	if err != nil {

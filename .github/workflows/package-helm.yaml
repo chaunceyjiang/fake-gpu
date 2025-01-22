@@ -35,8 +35,8 @@ jobs:
           # Package charts
           find "$CHARTS_DIR" -name values.yaml | xargs -I '{}' \
               sed -e s"/pullPolicy:.*/pullPolicy: IfNotPresent/" -i '{}'
-          mkdir -p $CHARTS_DIR/templates/files
-          cp conf/fake-gpu.yaml $CHARTS_DIR/templates/files/fake-gpu.yaml
+          mkdir -p $CHARTS_DIR/files
+          cp conf/fake-gpu.yaml $CHARTS_DIR/files/fake-gpu.yaml
           helm package --version "$GITHUB_REF_NAME" --app-version "$GITHUB_REF_NAME" "$CHARTS_DIR"
           find . -name '*.tgz' -print | while read SRC_FILE; do
             DEST_FILE=$(echo $SRC_FILE | sed 's/v/helm-chart-v/g')
@@ -78,8 +78,8 @@ jobs:
           echo "CHARTS_DIR=${CHARTS_DIR}"
           echo "GITHUB_REF_NAME=${GITHUB_REF_NAME}"
           echo "majmin=${majmin}"
-          mkdir -p $CHARTS_DIR/templates/files
-          cp conf/fake-gpu.yaml $CHARTS_DIR/templates/files/fake-gpu.yaml
+          mkdir -p $CHARTS_DIR/files
+          cp conf/fake-gpu.yaml $CHARTS_DIR/files/fake-gpu.yaml
           # Package charts
           CHART_VERSION="${majmin}-unstable"
           if [  $GITHUB_REF_NAME = "main" ]; then

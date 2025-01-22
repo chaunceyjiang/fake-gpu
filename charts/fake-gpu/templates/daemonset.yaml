@@ -82,6 +82,9 @@ spec:
             mountPath: /host-dev
           - name: config
             mountPath: /etc/fake-gpu
+          - name: config-file
+            mountPath: /fake-gpu/fake-gpu.yaml
+            subPath: fake-gpu.yaml
           {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -101,6 +104,9 @@ spec:
         hostPath:
           path: /var/run/nri
           type: DirectoryOrCreate
+      - name: config-file
+        configMap:
+          name: {{ .Release.Name }}-configmap
       {{- if .Values.nri.runtime.patchConfig }}
       - name: containerd-config
         hostPath:
