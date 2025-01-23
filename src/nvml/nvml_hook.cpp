@@ -390,7 +390,6 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetCpuAffinity(nvmlDevice_t d
         prev = pos + 1;
     }
     cpu_affinity_list.push_back(cpu_affinity.substr(prev));
-    unsigned long cpuSetValue = 0;
     for (std::vector<std::string>::size_type i = 0; i < cpu_affinity_list.size(); i++) {
         std::string::size_type dash_pos = cpu_affinity_list[i].find("-");
         if (dash_pos != std::string::npos) {
