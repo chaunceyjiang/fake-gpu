@@ -1217,7 +1217,7 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetNvLinkRemotePciInfo_v2(nvm
                                                                              nvmlPciInfo_t *pci) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetNvLinkRemotePciInfo_v2");
     GPU *gpu = reinterpret_cast<GPU *>(device);
-    if (link > gpu->nvlink.peer_gpus.size()) {
+    if (link >= gpu->nvlink.peer_gpus.size()) {
         return NVML_ERROR_NOT_SUPPORTED;
     }
     std::string uuid = gpu->nvlink.peer_gpus[link];
