@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/NVIDIA/go-nvml/pkg/nvml"
 	"github.com/spf13/cobra"
@@ -74,23 +75,24 @@ func run() {
 		var intValue int64
 		buf := bytes.NewReader(fields[0].Value[:])
 		binary.Read(buf, binary.LittleEndian, &intValue)
-		for j := i; j <= int(intValue); j++ {
+		for j := 0; j <= int(intValue); j++ {
 			_, ret := device.GetNvLinkRemotePciInfo(j - 1)
 			if ret != nvml.SUCCESS {
 				continue
 			}
-			topo[i][i] = fmt.Sprintf("NV%d", intValue)
+			topo[i][j] = fmt.Sprintf("NV%d", intValue)
 		}
-		cpuAffinity, ret := device.GetCpuAffinity(16)
+		cpuAffinity, ret := device.GetCpuAffinity(32)
 		if ret != nvml.SUCCESS {
 			continue
 		}
-		fmt.Printf("cpuAffinity: %v\n", cpuAffinity)
+
+		fmt.Printf("cpuAffinity: %v\n", convertToRanges(cpuAffinity))
 		numaAffinity, ret := device.GetMemoryAffinity(1, nvml.AffinityScope(0))
 		if ret != nvml.SUCCESS {
 			continue
 		}
-		fmt.Printf("numaAffinity: %v\n", numaAffinity)
+		fmt.Printf("numaAffinity: %v\n", convertToRanges(numaAffinity))
 	}
 	for i := 0; i < count; i++ {
 		for j := 0; j < count; j++ {
@@ -122,4 +124,27 @@ var TopoCmd = &cobra.Command{
 
 func init() {
 	TopoCmd.Flags().BoolP("matrix", "m", false, "Display the GPUDirect communication matrix for the system.")
+}
+
+func convertToRanges(input []uint) string {
+	var ranges []string
+	for i, num := range input {
+		start := -1
+		for j := 0; j < 64; j++ {
+			if (num & (1 << j)) != 0 {
+				if start == -1 {
+					start = i*64 + j
+				}
+			} else {
+				if start != -1 {
+					ranges = append(ranges, fmt.Sprintf("%d-%d", start, i*64+j-1))
+					start = -1
+				}
+			}
+		}
+		if start != -1 {
+			ranges = append(ranges, fmt.Sprintf("%d-%d", start, i*64+63))
+		}
+	}
+	return strings.Join(ranges, ",")
 }
