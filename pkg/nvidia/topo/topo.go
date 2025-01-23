@@ -1,6 +1,8 @@
 package topo
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
 	"log"
 
@@ -44,19 +46,9 @@ func run() {
 		log.Fatalf("Unable to get device count: %v", nvml.ErrorString(ret))
 		return
 	}
-	count = 8
 	topo := make([][]string, count)
 	for i := 0; i < count; i++ {
-		topo[i] = make([]string, count)
-	}
-	for i := 0; i < count; i++ {
-		for j := 0; j < count; j++ {
-			if i == j {
-				topo[i][j] = "X"
-			} else {
-				topo[i][j] = "NV18"
-			}
-		}
+		topo[i] = make([]string, count+3)
 	}
 	for i := 0; i < count; i++ {
 		fmt.Printf("\t\033[4mGPU%d\033[0m", i)
@@ -66,14 +58,39 @@ func run() {
 	}
 	fmt.Printf("\n")
 	for i := 0; i < count; i++ {
-		for j := 0; j < count; j++ {
-			if j == 0 {
-				fmt.Printf("GPU%d\t%s", i, topo[i][j])
-			} else {
-				fmt.Printf("\t%s", topo[i][j])
-			}
+		device, ret := nvml.DeviceGetHandleByIndex(i)
+		if ret != nvml.SUCCESS {
+			log.Fatalf("Unable to get device at index %d: %v", i, nvml.ErrorString(ret))
 		}
-		fmt.Printf("\n")
+		fields := []nvml.FieldValue{
+			{
+				FieldId: nvml.FI_DEV_NVSWITCH_CONNECTED_LINK_COUNT,
+			},
+		}
+		ret = device.GetFieldValues(fields)
+		if ret != nvml.SUCCESS {
+			continue
+		}
+		var intValue int64
+		buf := bytes.NewReader(fields[0].Value[:])
+		binary.Read(buf, binary.LittleEndian, &intValue)
+		for j := i; j <= int(intValue); j++ {
+			_, ret := device.GetNvLinkRemotePciInfo(j - 1)
+			if ret != nvml.SUCCESS {
+				continue
+			}
+			topo[i][i] = fmt.Sprintf("NV%d", intValue)
+		}
+		cpuAffinity, ret := device.GetCpuAffinity(1)
+		if ret != nvml.SUCCESS {
+			continue
+		}
+		fmt.Printf("cpuAffinity: %v\n", cpuAffinity)
+		numaAffinity, ret := device.GetMemoryAffinity(1, nvml.AffinityScope(0))
+		if ret != nvml.SUCCESS {
+			continue
+		}
+		fmt.Printf("numaAffinity: %v\n", numaAffinity)
 	}
 	fmt.Printf("\n")
 	fmt.Printf("Legend:\n")

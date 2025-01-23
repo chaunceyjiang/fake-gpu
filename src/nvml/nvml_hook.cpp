@@ -361,7 +361,7 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetMemoryAffinity(nvmlDevice_
                                                                      nvmlAffinityScope_t scope) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetMemoryAffinity");
     if (scope != NVML_AFFINITY_SCOPE_NODE) {
-       return NVML_ERROR_NOT_SUPPORTED;
+        return NVML_ERROR_NOT_SUPPORTED;
     }
     GPU *gpu = reinterpret_cast<GPU *>(device);
     *nodeSet = 1 << gpu->numa.node;
@@ -530,8 +530,9 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetPciInfo_v3(nvmlDevice_t de
     // convert nvmlDevice_t to GPU object
     GPU *gpu = reinterpret_cast<GPU *>(device);
     gpu->pci.bus_id.copy(pci->busId, NVML_DEVICE_PCI_BUS_ID_BUFFER_SIZE);
+    pci->bus = gpu->pci.bus;
     pci->domain = gpu->pci.domain_id;
-    pci->bus = gpu->pci.device_id;
+    pci->device = gpu->pci.device_id;
     pci->pciSubSystemId = gpu->pci.sub_system_id;
     return NVML_SUCCESS;
 }
@@ -1207,21 +1208,22 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetNvLinkRemotePciInfo_v2(nvm
                                                                              nvmlPciInfo_t *pci) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetNvLinkRemotePciInfo_v2");
     GPU *gpu = reinterpret_cast<GPU *>(device);
-    if (link < gpu->nvlink.peer_gpus.size()) {
-        for (auto uuid : gpu->nvlink.peer_gpus) {
-            for (auto peer: nvidia_gpus) {
-                if (peer.uuid == uuid) {
-                    strncpy(pci->busId, peer.pci.bus_id.c_str(), NVML_DEVICE_PCI_BUS_ID_BUFFER_SIZE);
-                    pci->domain = peer.pci.domain_id;
-                    pci->device = peer.pci.device_id;
-                    pci->pciDeviceId = peer.pci.device_id;
-                    pci->pciSubSystemId = peer.pci.sub_system_id;
-                    return NVML_SUCCESS;
-                }
-            }
+    if (link > gpu->nvlink.peer_gpus.size()) {
+        return NVML_ERROR_NOT_SUPPORTED;
+    }
+    std::string uuid = gpu->nvlink.peer_gpus[link];
+    for (auto peer : nvidia_gpus) {
+        if (peer.uuid == uuid) {
+            snprintf(pci->busId, NVML_DEVICE_PCI_BUS_ID_BUFFER_SIZE, "%s", peer.pci.bus_id.c_str());
+            pci->domain = peer.pci.domain_id;
+            pci->device = peer.pci.device_id;
+            pci->pciDeviceId = peer.pci.device_id;
+            pci->bus = peer.pci.bus;
+            pci->pciSubSystemId = peer.pci.sub_system_id;
+            return NVML_SUCCESS;
         }
     }
-    return NVML_ERROR_INVALID_ARGUMENT;
+    return NVML_ERROR_NOT_SUPPORTED;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetNvLinkErrorCounter(nvmlDevice_t device, unsigned int link,

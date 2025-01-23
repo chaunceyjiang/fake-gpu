@@ -7,6 +7,7 @@
 // PCI struct
 struct PCI {
     std::string bus_id;
+    int bus;
     int device_id;
     int domain_id;
     int sub_system_id;
