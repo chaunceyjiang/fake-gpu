@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"log"
+	"math"
 	"strings"
 
 	"github.com/NVIDIA/go-nvml/pkg/nvml"
@@ -59,6 +60,31 @@ func run() {
 	}
 	fmt.Printf("\n")
 	for i := 0; i < count; i++ {
+		for j := 0; j < count; j++ {
+			if i == j {
+				topo[i][j] = "X"
+			} else if topo[i][j] == "" {
+				topo[i][j] = "SYS"
+			}
+		}
+	}
+	gpuMaps := make(map[string]int)
+	for i := 0; i < count; i++ {
+
+		device, ret := nvml.DeviceGetHandleByIndex(i)
+		if ret != nvml.SUCCESS {
+			log.Fatalf("Unable to get device at index %d: %v", i, nvml.ErrorString(ret))
+		}
+		pci, ret := device.GetPciInfo()
+		if ret != nvml.SUCCESS {
+			log.Fatalf("Unable to get device pci at index %d: %v", i, nvml.ErrorString(ret))
+		}
+		fmt.Printf("init %d pci: %s %s \n", i, int8ArrayToString(pci.BusIdLegacy), int8ArrayToString(pci.BusId))
+		fmt.Printf("pci field: %v\n", pci)
+		gpuMaps[int8ArrayToString(pci.BusIdLegacy)] = i
+	}
+	for i := 0; i < count; i++ {
+		peers := make([]int, 0)
 		device, ret := nvml.DeviceGetHandleByIndex(i)
 		if ret != nvml.SUCCESS {
 			log.Fatalf("Unable to get device at index %d: %v", i, nvml.ErrorString(ret))
@@ -75,28 +101,46 @@ func run() {
 		var intValue int64
 		buf := bytes.NewReader(fields[0].Value[:])
 		binary.Read(buf, binary.LittleEndian, &intValue)
-		for j := 0; j <= int(intValue); j++ {
-			_, ret := device.GetNvLinkRemotePciInfo(j - 1)
+		for j := 0; j < int(intValue); j++ {
+			pci, ret := device.GetNvLinkRemotePciInfo(j)
 			if ret != nvml.SUCCESS {
 				continue
 			}
-			topo[i][j] = fmt.Sprintf("NV%d", intValue)
+			fmt.Printf("pci %d: %s %s\n", j, int8ArrayToString(pci.BusIdLegacy), int8ArrayToString(pci.BusId))
+			fmt.Printf("remote pci field: %v\n", pci)
+			if index, ok := gpuMaps[int8ArrayToString(pci.BusIdLegacy)]; ok {
+				peers = append(peers, index)
+			}
+		}
+		for _, peer := range peers {
+			topo[i][peer] = fmt.Sprintf("NV%d", intValue)
 		}
 		cpuAffinity, ret := device.GetCpuAffinity(32)
 		if ret != nvml.SUCCESS {
 			continue
 		}
 
-		fmt.Printf("cpuAffinity: %v\n", convertToRanges(cpuAffinity))
+		topo[i][count] = convertToRanges(cpuAffinity)
 		numaAffinity, ret := device.GetMemoryAffinity(1, nvml.AffinityScope(0))
 		if ret != nvml.SUCCESS {
 			continue
 		}
-		fmt.Printf("numaAffinity: %v\n", convertToRanges(numaAffinity))
+		if len(numaAffinity) > 0 {
+			if numaAffinity[0] == math.MaxUint64 {
+				topo[i][count+1] = "N/A"
+			} else {
+				topo[i][count+1] = fmt.Sprintf("%d", numaAffinity[0])
+			}
+		}
+		topo[i][count+2] = "N/A"
 	}
 	for i := 0; i < count; i++ {
+		fmt.Printf("\033[4mGPU%d\033[0m", i)
 		for j := 0; j < count; j++ {
 			fmt.Printf("\t%s", topo[i][j])
+		}
+		for j := 0; j < 3; j++ {
+			fmt.Printf("\t%s\t", topo[i][count+j])
 		}
 		fmt.Printf("\n")
 	}
@@ -147,4 +191,21 @@ func convertToRanges(input []uint) string {
 		}
 	}
 	return strings.Join(ranges, ",")
+}
+
+func int8ArrayToString[T ~[16]int8 | ~[32]int8](arr T) string {
+	var bytes []byte
+	switch v := any(arr).(type) {
+	case [16]int8:
+		bytes = make([]byte, 16)
+		for i, b := range v {
+			bytes[i] = byte(b)
+		}
+	case [32]int8:
+		bytes = make([]byte, 32)
+		for i, b := range v {
+			bytes[i] = byte(b)
+		}
+	}
+	return string(bytes)
 }
