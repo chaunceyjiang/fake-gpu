@@ -397,14 +397,24 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetCpuAffinity(nvmlDevice_t d
             int start = std::stoi(cpu_affinity_list[i].substr(0, dash_pos));
             int end = std::stoi(cpu_affinity_list[i].substr(dash_pos + 1));
             for (int j = start; j <= end; j++) {
-                cpuSetValue |= 1 << j;
+                // 计算数组索引和位偏移
+                size_t index = j / (sizeof(unsigned long) * 8);
+                size_t offset = j % (sizeof(unsigned long) * 8);
+                if (index < cpuSetSize) {
+                    // 设置相应的位
+                    cpuSet[index] |= 1UL << offset;
+                }
             }
         } else {
             int cpu = std::stoi(cpu_affinity_list[i]);
-            cpuSetValue |= 1 << cpu;
+            size_t index = cpu / (sizeof(unsigned long) * 8);
+            size_t offset = cpu % (sizeof(unsigned long) * 8);
+            if (index < cpuSetSize) {
+                // 设置相应的位
+                cpuSet[index] |= 1UL << offset;
+            }
         }
     }
-    cpuSet[0] = cpuSetValue;
     return NVML_SUCCESS;
 }
 

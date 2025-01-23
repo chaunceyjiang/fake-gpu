@@ -81,7 +81,7 @@ func run() {
 			}
 			topo[i][i] = fmt.Sprintf("NV%d", intValue)
 		}
-		cpuAffinity, ret := device.GetCpuAffinity(1)
+		cpuAffinity, ret := device.GetCpuAffinity(16)
 		if ret != nvml.SUCCESS {
 			continue
 		}
