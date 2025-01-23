@@ -92,6 +92,12 @@ func run() {
 		}
 		fmt.Printf("numaAffinity: %v\n", numaAffinity)
 	}
+	for i := 0; i < count; i++ {
+		for j := 0; j < count; j++ {
+			fmt.Printf("\t%s", topo[i][j])
+		}
+		fmt.Printf("\n")
+	}
 	fmt.Printf("\n")
 	fmt.Printf("Legend:\n")
 	fmt.Printf("\n")
