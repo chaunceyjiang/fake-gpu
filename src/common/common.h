@@ -30,8 +30,8 @@ struct NVLink {
         nvlink.capacity = node["capacity"].as<int>();
         nvlink.bandwidth = node["bandwidth"].as<int>();
         // if peer_gpu is not empty, strore all peer GPU UUIDs to peer_gpus
-        if (node["peer_gpu"]) {
-            for (const auto &peer_gpu_node : node["peer_gpu"]) {
+        if (node["peer_gpu_uuids"]) {
+            for (const auto &peer_gpu_node : node["peer_gpu_uuids"]) {
                 nvlink.peer_gpus.push_back(peer_gpu_node.as<std::string>());
             }
         }

@@ -31,7 +31,7 @@ nvidia:
       version: 1.0
       capacity: 1
       bandwidth: 25
-      peer_gpu:
+      peer_gpu_uuids:
       - GPU-bcd
     numa:
       node: 0
@@ -109,7 +109,7 @@ nvidia:
       version: 1.0
       capacity: 1
       bandwidth: 25
-      peer_gpu: 
+      peer_gpu_uuids: 
       - GPU-abc
     numa:
       node: 1
