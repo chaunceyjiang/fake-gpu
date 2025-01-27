@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/NVIDIA/go-nvml/pkg/nvml"
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -161,6 +162,8 @@ func run() error {
 		}
 		process[i].Name = string(processName)
 	}
+	// print nvidia-smi
+	fmt.Println(time.Now().Format(time.ANSIC))
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
 	t.SetTitle(fmt.Sprintf("NVIDIA-SMI 470.129.06           Driver Version: %s          CUDA Version: %s", driverVersion, cudaVersion))
