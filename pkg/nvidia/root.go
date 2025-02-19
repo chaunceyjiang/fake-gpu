@@ -13,11 +13,20 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/chaunceyjiang/fake-gpu/pkg/nvidia/common"
+	"github.com/chaunceyjiang/fake-gpu/pkg/nvidia/query"
 	"github.com/chaunceyjiang/fake-gpu/pkg/nvidia/topo"
 )
 
+var ops = common.Opstion{}
+
 func init() {
 	RootCmd.AddCommand(topo.TopoCmd)
+	RootCmd.Flags().StringSliceVar(&ops.Query, "query-gpu", nil, "Information about GPU.")
+	RootCmd.Flags().StringSliceVar(&ops.Format, "format", nil, `Comma separated list of format options:"
+	csv - comma separated values (MANDATORY)
+	noheader - skip the first line with column headers
+	nounits - don't print units for numerical values
+`)
 }
 
 func busIdToString(busId [32]int8) string {
@@ -201,7 +210,13 @@ var RootCmd = &cobra.Command{
 	Short: "nvidia-smi is a command-line utility that provides monitoring and management capabilities for NVIDIA GPUs.",
 	Long:  `nvidia-smi is a command-line utility that provides monitoring and management capabilities for NVIDIA GPUs.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := run()
+		var err error
+		switch {
+		case len(ops.Query) > 0:
+			err = query.Query(ops)
+		default:
+			err = run()
+		}
 		if err != nil {
 			fmt.Println("Error:", err)
 			os.Exit(1)
