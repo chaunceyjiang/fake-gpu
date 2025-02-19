@@ -23,3 +23,8 @@ type Process struct {
 	PID     uint32
 	UsedMem uint64
 }
+
+type Opstion struct {
+	Query  []string
+	Format []string
+}
