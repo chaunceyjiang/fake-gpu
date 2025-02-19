@@ -79,8 +79,6 @@ func run() {
 		if ret != nvml.SUCCESS {
 			log.Fatalf("Unable to get device pci at index %d: %v", i, nvml.ErrorString(ret))
 		}
-		fmt.Printf("init %d pci: %s %s \n", i, int8ArrayToString(pci.BusIdLegacy), int8ArrayToString(pci.BusId))
-		fmt.Printf("pci field: %v\n", pci)
 		gpuMaps[int8ArrayToString(pci.BusIdLegacy)] = i
 	}
 	for i := 0; i < count; i++ {
@@ -106,8 +104,6 @@ func run() {
 			if ret != nvml.SUCCESS {
 				continue
 			}
-			fmt.Printf("pci %d: %s %s\n", j, int8ArrayToString(pci.BusIdLegacy), int8ArrayToString(pci.BusId))
-			fmt.Printf("remote pci field: %v\n", pci)
 			if index, ok := gpuMaps[int8ArrayToString(pci.BusIdLegacy)]; ok {
 				peers = append(peers, index)
 			}
