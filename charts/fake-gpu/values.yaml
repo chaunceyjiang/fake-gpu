@@ -91,7 +91,7 @@ nri:
     index: "87"
     name: fake-gpu
   runtime:
-    patchConfig: false
+    patchConfig: true
   config:
     pluginRegistrationTimeout: 5s
     pluginRequestTimeout: 2s
