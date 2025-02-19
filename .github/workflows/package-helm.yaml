@@ -35,6 +35,8 @@ jobs:
           # Package charts
           find "$CHARTS_DIR" -name values.yaml | xargs -I '{}' \
               sed -e s"/pullPolicy:.*/pullPolicy: IfNotPresent/" -i '{}'
+          find "$CHARTS_DIR" -name values.yaml | xargs -I '{}' \
+              sed -e s'/tag: ""/tag: $GITHUB_REF_NAME/'' -i '{}'
           mkdir -p $CHARTS_DIR/files
           cp conf/fake-gpu.yaml $CHARTS_DIR/files/fake-gpu.yaml
           helm package --version "$GITHUB_REF_NAME" --app-version "$GITHUB_REF_NAME" "$CHARTS_DIR"
@@ -50,7 +52,20 @@ jobs:
           draft: true
           append_body: true
           files: fake-gpu-*helm-chart*.tgz
-
+      - name: Log In To Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | \
+              helm registry login ${{ env.REGISTRY }}/${{ env.REGISTRY_PATH }} -u ${{ env.REGISTRY_USER }} --password-stdin
+      - name: Push Unstable Helm Charts To Registry
+        shell: bash
+        run: |
+          find . -name '*.tgz' -print | while read SRC_FILE; do
+            DEST_FILE=$(echo $SRC_FILE | sed 's/helm-chart-v/v/g')
+            mv $SRC_FILE $DEST_FILE
+          done
+          for i in ./*.tgz; do
+              helm push $i oci://${{ env.REGISTRY }}/${{ env.REGISTRY_PATH }}/helm-charts
+          done
   unstable:
     if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
     concurrency:
