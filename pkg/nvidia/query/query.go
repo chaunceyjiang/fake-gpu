@@ -28,9 +28,13 @@ func Query(ops common.Opstion) error {
 	if ret != nvml.SUCCESS {
 		return errors.New("failed to get device count")
 	}
-
+	driverVersion, ret := nvml.SystemGetDriverVersion()
+	if ret != nvml.SUCCESS {
+		return errors.New("failed to get driver version")
+	}
 	for i := 0; i < count; i++ {
 		gpu := common.GPU{}
+		gpu.DriverVersion = driverVersion
 		device, ret := nvml.DeviceGetHandleByIndex(i)
 		if ret != nvml.SUCCESS {
 			return errors.New("failed to get device handle")
@@ -57,23 +61,30 @@ func Query(ops common.Opstion) error {
 	if !noheader {
 		fmt.Println(strings.Join(ops.Query, ", "))
 	}
-	result := []string{}
-	for _, query := range ops.Query {
-		for _, gpu := range gpus {
+	result := [][]string{}
+
+	for i, gpu := range gpus {
+		result[i] = make([]string, 0)
+		for _, query := range ops.Query {
 			switch query {
 			case "index":
-				result = append(result, fmt.Sprintf("%d", gpu.Idx))
+				result[i] = append(result[i], fmt.Sprintf("%d", gpu.Idx))
 			case "uuid":
-				result = append(result, gpu.UUID)
+				result[i] = append(result[i], gpu.UUID)
 			case "name":
-				result = append(result, gpu.Name)
+				result[i] = append(result[i], gpu.Name)
 			case "memory.total":
-				result = append(result, fmt.Sprintf("%d MiB", gpu.TotalMem/1024/1024))
+				result[i] = append(result[i], fmt.Sprintf("%d MiB", gpu.TotalMem/1024/1024))
 			case "memory.used":
-				result = append(result, fmt.Sprintf("%d MiB", gpu.UsedMem/1024/1024))
+				result[i] = append(result[i], fmt.Sprintf("%d MiB", gpu.UsedMem/1024/1024))
+			case "driver_version":
+				result[i] = append(result[i], gpu.DriverVersion)
 			}
 		}
 	}
-	fmt.Println(strings.Join(result, ", "))
+	// csv output
+	for _, r := range result {
+		fmt.Println(strings.Join(r, ", "))
+	}
 	return nil
 }
