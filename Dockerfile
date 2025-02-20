@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 AS build
+FROM ubuntu:20.04 AS build
 WORKDIR /fake-gpu
 COPY . .
 ENV DEBIAN_FRONTEND=noninteractive
@@ -19,7 +19,7 @@ WORKDIR /go/src/github.com/chaunceyjiang/fake-gpu
 COPY . .
 RUN make build-cmd
 
-FROM ubuntu:22.04
+FROM ubuntu:20.04
 WORKDIR /fake-gpu
 COPY --from=build /fake-gpu/output/lib64/libfakegpu.so /fake-gpu/libfakegpu.so
 COPY --from=gobuild /go/src/github.com/chaunceyjiang/fake-gpu/output/bin/device-injector /fake-gpu/device-injector
