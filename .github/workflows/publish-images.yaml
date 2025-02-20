@@ -27,7 +27,9 @@ jobs:
           fetch-depth: 0
 
       - name: Build images
-        run: make images BUILD_TYPE=Release
+        run: |
+          sed -i '6,7d' Dockerfile
+          make images BUILD_TYPE=Release
 
       - name: Log in to registry
         run: |
