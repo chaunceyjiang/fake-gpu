@@ -31,4 +31,5 @@ jobs:
         with:
           skip_existing: true
         env:
+          RELEASE_NAME_TEMPLATE: "{{ .Version }}"
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
