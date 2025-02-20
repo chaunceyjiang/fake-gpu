@@ -54,6 +54,7 @@ func sizeString(str string, size int, alignRight bool) string {
 
 	return str[:size]
 }
+
 func run() error {
 	/*
 			Sun Jan 12 08:42:33 2025
@@ -150,6 +151,11 @@ func run() error {
 		if ret != nvml.SUCCESS {
 			log.Fatalf("Unable to get memory info of device at index %d: %v", i, nvml.ErrorString(ret))
 		}
+		util, ret := device.GetUtilizationRates()
+		if ret != nvml.SUCCESS {
+			log.Fatalf("Unable to get utilization of device at index %d: %v", i, nvml.ErrorString(ret))
+		}
+		gpu.Util = util.Gpu
 		gpu.TotalMem = mem.Total
 		gpu.UsedMem = mem.Used
 		gpus = append(gpus, gpu)
@@ -183,7 +189,7 @@ func run() error {
 	t.AppendSeparator()
 	for _, gpu := range gpus {
 		t.AppendRow(table.Row{fmt.Sprintf("%s  %s%s", sizeString(strconv.Itoa(gpu.Idx), 3, true), sizeString(gpu.Name, 22, false), sizeString("Off", 13, true)), fmt.Sprintf("%s %s", sizeString(gpu.BusID, 16, false), sizeString("Off", 3, true)), sizeString("Off", 20, true)})
-		t.AppendRow(table.Row{"N/A   33C    P8               11W /  70W", sizeString(fmt.Sprintf("%dMiB / %dMiB", int(gpu.UsedMem/1024/1024), gpu.TotalMem/1024/1024), 20, true), fmt.Sprintf("%s %s", sizeString(strconv.Itoa(gpu.Util)+"%", 8, true), sizeString("Default", 11, true))})
+		t.AppendRow(table.Row{"N/A   33C    P8               11W /  70W", sizeString(fmt.Sprintf("%dMiB / %dMiB", int(gpu.UsedMem/1024/1024), gpu.TotalMem/1024/1024), 20, true), fmt.Sprintf("%s %s", sizeString(strconv.Itoa(int(gpu.Util))+"%", 8, true), sizeString("Default", 11, true))})
 	}
 	t.AppendRow(table.Row{"", "", sizeString("N/A", 20, true)})
 	t.AppendSeparator()

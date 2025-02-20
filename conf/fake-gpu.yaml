@@ -1,6 +1,6 @@
 nvidia:
   - name: NVIDIA Tesla T4
-    uuid: GPU-abc
+    uuid: GPU-0
     driver_version: 540.33.01
     brand: Tesla
     architecture: 6 # KEPLER 2, MAXWELL 3,PASCAL 4 ,VOLTA  5,TURING 6,,AMPERE 7 ,ADA 8,HOPPER 9 
@@ -32,7 +32,9 @@ nvidia:
       capacity: 1
       bandwidth: 25
       peer_gpu_uuids:
-      - GPU-bcd
+      - GPU-1
+      - GPU-2
+      - GPU-3
     numa:
       node: 0
       cpu_affinity: 0-7,16-23
@@ -77,8 +79,8 @@ nvidia:
         fieldName: NVML_FI_DEV_REMAPPED_FAILURE
         fieldType: unsigned int
         fieldValue: 0
-  - name: NVIDIA Tesla P4
-    uuid: GPU-bcd
+  - name: NVIDIA Tesla T4
+    uuid: GPU-1
     driver_version: 440.33.01
     brand: Tesla
     architecture: 3 # KEPLER 2, MAXWELL 3,PASCAL 4 ,VOLTA  5,TURING 6,,AMPERE 7 ,ADA 8,HOPPER 9
@@ -94,8 +96,8 @@ nvidia:
       enforcedLimit: 450000
       usage: 250000
     utilization:
-      gpu: 10
-      memory: 10
+      gpu: 13
+      memory: 13
     memory:
       total: 16160000000
       free: 16160000000
@@ -110,7 +112,169 @@ nvidia:
       capacity: 1
       bandwidth: 25
       peer_gpu_uuids: 
-      - GPU-abc
+      - GPU-0
+      - GPU-2
+      - GPU-3
+    numa:
+      node: 0
+      cpu_affinity: 0-7,16-23
+    mig:
+      enabled: false
+    events:
+    - eventType: 8
+      eventData: 43
+    - eventType: 8
+      eventData: 31
+    dcgm:
+      fields:
+      - fieldId: 147 #Field Identifiers.
+        fieldName: NVML_FI_DEV_NVSWITCH_CONNECTED_LINK_COUNT
+        fieldType: unsigned int # Field Types. [double, unsigned int, unsigned long, unsigned long long, signed long long].
+        fieldValue: 18
+      - fieldId: 82
+        fieldName: NVML_FI_DEV_MEMORY_TEMP
+        fieldType: unsigned int
+        fieldValue: 250
+      - fieldId: 83
+        fieldName: NVML_FI_DEV_TOTAL_ENERGY_CONSUMPTION
+        fieldType: unsigned int
+        fieldValue: 0
+      - fieldId: 139
+        fieldName: NVML_FI_DEV_NVLINK_THROUGHPUT_DATA_RX
+        fieldType: unsigned int
+        fieldValue: 0
+      - fieldId: 138
+        fieldName: NVML_FI_DEV_NVLINK_THROUGHPUT_DATA_TX
+        fieldType: unsigned int
+        fieldValue: 0
+      - fieldId: 142
+        fieldName: NVML_FI_DEV_NVLINK_THROUGHPUT_RAW_RX
+        fieldType: unsigned int
+        fieldValue: 0
+      - fieldId: 143
+        fieldName: NVML_FI_DEV_REMAPPED_UNC
+        fieldType: unsigned int
+        fieldValue: 0
+      - fieldId: 145
+        fieldName: NVML_FI_DEV_REMAPPED_FAILURE
+        fieldType: unsigned int
+        fieldValue: 0
+  - name: NVIDIA Tesla T4
+    uuid: GPU-2
+    driver_version: 440.33.01
+    brand: Tesla
+    architecture: 3 # KEPLER 2, MAXWELL 3,PASCAL 4 ,VOLTA  5,TURING 6,,AMPERE 7 ,ADA 8,HOPPER 9
+    cuda_version: 12020
+    cuda_cores: 2560
+    vbios_version: 90.04.1F.00.03
+    image_version: 1.2
+    serial: 12567890ABCDEF
+    power:
+      minLimit: 200000
+      maxLimit: 850000
+      defaultLimit: 450000
+      enforcedLimit: 450000
+      usage: 250000
+    utilization:
+      gpu: 12
+      memory: 12
+    memory:
+      total: 16160000000
+      free: 16160000000
+    pci:
+      bus_id: 0000:00:1E.2
+      bus: 2
+      device_id: 1234
+      domain_id: 0
+      sub_system_id: 0
+    nvlink:
+      version: 1.0
+      capacity: 1
+      bandwidth: 25
+      peer_gpu_uuids: 
+      - GPU-0
+      - GPU-1
+      - GPU-3
+    numa:
+      node: 1
+      cpu_affinity: 8-15,24-31
+    mig:
+      enabled: false
+    events:
+    - eventType: 8
+      eventData: 43
+    - eventType: 8
+      eventData: 31
+    dcgm:
+      fields:
+      - fieldId: 147 #Field Identifiers.
+        fieldName: NVML_FI_DEV_NVSWITCH_CONNECTED_LINK_COUNT
+        fieldType: unsigned int # Field Types. [double, unsigned int, unsigned long, unsigned long long, signed long long].
+        fieldValue: 18
+      - fieldId: 82
+        fieldName: NVML_FI_DEV_MEMORY_TEMP
+        fieldType: unsigned int
+        fieldValue: 250
+      - fieldId: 83
+        fieldName: NVML_FI_DEV_TOTAL_ENERGY_CONSUMPTION
+        fieldType: unsigned int
+        fieldValue: 0
+      - fieldId: 139
+        fieldName: NVML_FI_DEV_NVLINK_THROUGHPUT_DATA_RX
+        fieldType: unsigned int
+        fieldValue: 0
+      - fieldId: 138
+        fieldName: NVML_FI_DEV_NVLINK_THROUGHPUT_DATA_TX
+        fieldType: unsigned int
+        fieldValue: 0
+      - fieldId: 142
+        fieldName: NVML_FI_DEV_NVLINK_THROUGHPUT_RAW_RX
+        fieldType: unsigned int
+        fieldValue: 0
+      - fieldId: 143
+        fieldName: NVML_FI_DEV_REMAPPED_UNC
+        fieldType: unsigned int
+        fieldValue: 0
+      - fieldId: 145
+        fieldName: NVML_FI_DEV_REMAPPED_FAILURE
+        fieldType: unsigned int
+        fieldValue: 0
+  - name: NVIDIA Tesla T4
+    uuid: GPU-3
+    driver_version: 440.33.01
+    brand: Tesla
+    architecture: 3 # KEPLER 2, MAXWELL 3,PASCAL 4 ,VOLTA  5,TURING 6,,AMPERE 7 ,ADA 8,HOPPER 9
+    cuda_version: 12020
+    cuda_cores: 2560
+    vbios_version: 90.04.1F.00.04
+    image_version: 1.2
+    serial: 12567890EFGSDS
+    power:
+      minLimit: 200000
+      maxLimit: 850000
+      defaultLimit: 450000
+      enforcedLimit: 450000
+      usage: 250000
+    utilization:
+      gpu: 14
+      memory: 14
+    memory:
+      total: 16160000000
+      free: 16160000000
+    pci:
+      bus_id: 0000:00:1E.4
+      bus: 2
+      device_id: 1234
+      domain_id: 0
+      sub_system_id: 0
+    nvlink:
+      version: 1.0
+      capacity: 1
+      bandwidth: 25
+      peer_gpu_uuids: 
+      - GPU-0
+      - GPU-1
+      - GPU-2
     numa:
       node: 1
       cpu_affinity: 8-15,24-31
