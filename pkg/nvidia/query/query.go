@@ -61,7 +61,7 @@ func Query(ops common.Opstion) error {
 	if !noheader {
 		fmt.Println(strings.Join(ops.Query, ", "))
 	}
-	result := [][]string{}
+	result := make([][]string, len(gpus))
 
 	for i, gpu := range gpus {
 		result[i] = make([]string, 0)
