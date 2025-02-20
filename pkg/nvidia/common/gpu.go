@@ -6,7 +6,7 @@ type GPU struct {
 	UsedMem       uint64
 	BusID         string
 	TotalMem      uint64
-	Util          int
+	Util          uint32
 	Idx           int
 	Name          string
 	DriverVersion string

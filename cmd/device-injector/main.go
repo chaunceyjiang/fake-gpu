@@ -106,7 +106,8 @@ func injectMounts(pod *api.PodSandbox, ctr *api.Container, a *api.ContainerAdjus
 	filenames := []string{
 		"libcuda.so.1",
 		"libnvidia-ml.so.1",
-		"libcudart.so"}
+		"libcudart.so",
+	}
 	librarySearchPaths := []string{
 		"/lib",
 		"/usr/lib64",

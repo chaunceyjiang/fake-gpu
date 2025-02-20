@@ -125,7 +125,7 @@ func run() {
 			if numaAffinity[0] == math.MaxUint64 {
 				topo[i][count+1] = "N/A"
 			} else {
-				topo[i][count+1] = fmt.Sprintf("%d", numaAffinity[0])
+				topo[i][count+1] = fmt.Sprintf("%d", numaAffinity[0]-1)
 			}
 		}
 		topo[i][count+2] = "N/A"
