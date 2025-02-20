@@ -36,7 +36,7 @@ jobs:
           find "$CHARTS_DIR" -name values.yaml | xargs -I '{}' \
               sed -e s"/pullPolicy:.*/pullPolicy: IfNotPresent/" -i '{}'
           find "$CHARTS_DIR" -name values.yaml | xargs -I '{}' \
-              sed -e s'/tag: ""/tag: $GITHUB_REF_NAME/'' -i '{}'
+              sed -e s'/tag: ""/tag: $GITHUB_REF_NAME/' -i '{}'
           mkdir -p $CHARTS_DIR/files
           cp conf/fake-gpu.yaml $CHARTS_DIR/files/fake-gpu.yaml
           helm package --version "$GITHUB_REF_NAME" --app-version "$GITHUB_REF_NAME" "$CHARTS_DIR"
