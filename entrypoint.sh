@@ -2,7 +2,7 @@
 echo "create fake gpu device"
 # count the number of gpu
 gpu_num=`cat /fake-gpu/fake-gpu.yaml |grep cuda_version | wc -l`
-for i in `seq 1 $gpu_num`
+for i in `seq 0 $gpu_num`
 do
   mknod /host-dev/nvidia$i c 195 $i
   chmod 666 /host-dev/nvidia$i
