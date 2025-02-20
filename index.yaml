@@ -11,4 +11,14 @@ entries:
     urls:
     - https://github.com/chaunceyjiang/fake-gpu/releases/download/v0.3.3/fake-gpu-helm-chart-v0.3.3.tgz
     version: v0.3.3
-generated: "2025-02-19T11:30:28.358656105Z"
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2025-02-20T15:03:26.34090075Z"
+    description: A Helm chart for Kubernetes
+    digest: 026714d2e24d2764e205ab58b348dcac2f10e193cbc21fb961e9e1093b7ff1a7
+    name: fake-gpu
+    type: application
+    urls:
+    - https://github.com/chaunceyjiang/fake-gpu/releases/download/fake-gpu-0.1.0/fake-gpu-0.1.0.tgz
+    version: 0.1.0
+generated: "2025-02-20T15:03:26.340908064Z"
