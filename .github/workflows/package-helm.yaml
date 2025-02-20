@@ -39,16 +39,23 @@ jobs:
               sed -e s'/tag: ""/tag: $GITHUB_REF_NAME/' -i '{}'
           mkdir -p $CHARTS_DIR/files
           cp conf/fake-gpu.yaml $CHARTS_DIR/files/fake-gpu.yaml
-          helm package --version "$GITHUB_REF_NAME" --app-version "$GITHUB_REF_NAME" "$CHARTS_DIR"
-
+          wget https://github.com/helm/chart-releaser/releases/download/v1.7.0/chart-releaser_1.7.0_linux_amd64.tar.gz
+          tar -xvf chart-releaser_1.7.0_linux_amd64.tar.gz
+          ./cr package $CHARTS_DIR --package-path .
+          find . -name '*.tgz' -print | while read SRC_FILE; do
+            DEST_FILE=$(echo $SRC_FILE | sed 's/v/helm-chart-v/g')
+            mv $SRC_FILE $DEST_FILE
+          done
+          ./cr index --owner $REGISTRY_USER \
+            --git-repo $REGISTRY_PATH  --git-token ${{ secrets.GITHUB_TOKEN }} \
+            --package-path . --release-name-template "{{ .Version }}"
       - name: Upload Stable Helm Charts to GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           name: ${{ github.ref_name }}
           draft: true
           append_body: true
-          files: fake-gpu-*.tgz
-
+          files: fake-gpu-*helm-chart*.tgz
   unstable:
     if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
     concurrency:
