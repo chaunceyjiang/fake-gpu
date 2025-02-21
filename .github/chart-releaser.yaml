@@ -1,0 +1,4 @@
+owner: chaunceyjiang
+git-repo: fake-gpu
+package-path: .
+release-name-template: "{{ .Version }}"
