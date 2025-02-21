@@ -1,21 +1,23 @@
-FROM ubuntu:20.04 AS build
+FROM ubuntu:18.04 AS build
 WORKDIR /fake-gpu
 COPY . .
 ENV DEBIAN_FRONTEND=noninteractive
 ARG BUILD_TYPE
-RUN sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
-RUN sed -i 's/security.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
+# RUN sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
+# RUN sed -i 's/security.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
 # Update the package list and install essential tools
 RUN apt-get update && apt-get install -y \
     build-essential \
-    cmake \
     ninja-build \
     git \
-    wget \
-    gcc-10 \
-    g++-10
-ENV CC=gcc-10
-ENV CXX=g++-10
+    wget
+# Install CMake
+RUN wget -q https://github.com/Kitware/CMake/releases/download/v3.22.0/cmake-3.22.0-Linux-x86_64.tar.gz && \
+    tar -zxvf cmake-3.22.0-Linux-x86_64.tar.gz && \
+    cp -r cmake-3.22.0-linux-x86_64/* /usr && \
+    rm -rf cmake-3.22.0-linux-x86_64
+
+
 RUN make build BUILD_TYPE=${BUILD_TYPE}
 
 FROM golang:1.22.5-bullseye AS gobuild
