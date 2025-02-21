@@ -16,39 +16,39 @@ env:
   REGISTRY_PATH: ${{ github.repository }}
 
 jobs:
-  release:
-    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
-    permissions:
-      contents: write
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  # release:
+  #   if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+  #   permissions:
+  #     contents: write
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Install Helm
-        uses: azure/setup-helm@v4.0.0
+  #     - name: Install Helm
+  #       uses: azure/setup-helm@v4.0.0
 
-      - name: Package Stable Helm Charts
-        run: |
-          echo "CHARTS_DIR=${CHARTS_DIR}"
-          echo "GITHUB_REF_NAME=${GITHUB_REF_NAME}"
-          # Package charts
-          find "$CHARTS_DIR" -name values.yaml | xargs -I '{}' \
-              sed -e s"/pullPolicy:.*/pullPolicy: IfNotPresent/" -i '{}'
-          mkdir -p $CHARTS_DIR/files
-          cp conf/fake-gpu.yaml $CHARTS_DIR/files/fake-gpu.yaml
-          helm package --version "$GITHUB_REF_NAME" --app-version "$GITHUB_REF_NAME" "$CHARTS_DIR"
-          find . -name '*.tgz' -print | while read SRC_FILE; do
-            DEST_FILE=$(echo $SRC_FILE | sed 's/v/helm-chart-v/g')
-            mv $SRC_FILE $DEST_FILE
-          done
-      - name: Upload Stable Helm Charts to GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          name: ${{ github.ref_name }}
-          draft: true
-          append_body: true
-          files: fake-gpu-*helm-chart*.tgz
+  #     - name: Package Stable Helm Charts
+  #       run: |
+  #         echo "CHARTS_DIR=${CHARTS_DIR}"
+  #         echo "GITHUB_REF_NAME=${GITHUB_REF_NAME}"
+  #         # Package charts
+  #         find "$CHARTS_DIR" -name values.yaml | xargs -I '{}' \
+  #             sed -e s"/pullPolicy:.*/pullPolicy: IfNotPresent/" -i '{}'
+  #         mkdir -p $CHARTS_DIR/files
+  #         cp conf/fake-gpu.yaml $CHARTS_DIR/files/fake-gpu.yaml
+  #         helm package --version "$GITHUB_REF_NAME" --app-version "$GITHUB_REF_NAME" "$CHARTS_DIR"
+  #         find . -name '*.tgz' -print | while read SRC_FILE; do
+  #           DEST_FILE=$(echo $SRC_FILE | sed 's/v/helm-chart-v/g')
+  #           mv $SRC_FILE $DEST_FILE
+  #         done
+  #     - name: Upload Stable Helm Charts to GitHub Release
+  #       uses: softprops/action-gh-release@v1
+  #       with:
+  #         name: ${{ github.ref_name }}
+  #         draft: true
+  #         append_body: true
+  #         files: fake-gpu-*helm-chart*.tgz
   unstable:
     if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
     concurrency:
