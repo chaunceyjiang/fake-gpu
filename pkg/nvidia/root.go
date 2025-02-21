@@ -101,7 +101,10 @@ func run() error {
 		|    4   N/A  N/A   3474124      C   /usr/bin/python3                          79578MiB |
 		|    5   N/A  N/A   1468655      C   /usr/bin/python3                          41472MiB |
 	*/
-	nvml.Init()
+	ret := nvml.Init()
+	if ret != nvml.SUCCESS {
+		log.Fatalf("Unable to initialize NVML: %v", nvml.ErrorString(ret))
+	}
 	defer nvml.Shutdown()
 	count, ret := nvml.DeviceGetCount()
 	if ret != nvml.SUCCESS {

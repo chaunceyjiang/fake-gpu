@@ -50,6 +50,34 @@ find "$SOURCE_DIR" -type f | while read -r source_file; do
         fi
     fi
 done
+
+# Function to handle termination signals
+cleanup() {
+    echo "Received termination signal, stopping device-injector..."
+    kill -TERM "$device_injector_pid" 2>/dev/null
+    wait "$device_injector_pid"
+    echo "device-injector stopped."
+    rm -f /run/nvidia/validations/toolkit-ready
+    rm -f /run/nvidia/validations/driver-ready
+    rm -rf $DEST_DIR/*
+    for i in `seq 0 $gpu_num`
+    do
+        rm -f /host-dev/nvidia$i
+    done
+    echo "Cleanup complete."
+    exit 0
+}
+
+# Trap termination signals
+trap cleanup TERM INT
+
 echo "start fake gpu device"
 echo "params: -gpu-uuid-suffix $NODE_NAME $@"
-/fake-gpu/device-injector -gpu-uuid-suffix $NODE_NAME $@
+/fake-gpu/device-injector -gpu-uuid-suffix $NODE_NAME $@ &
+device_injector_pid=$!
+# Create the toolkit-ready file to indicate that the toolkit is ready
+touch /run/nvidia/validations/toolkit-ready
+# Create the driver-ready file to indicate that the driver is ready
+touch /run/nvidia/validations/driver-ready
+# Wait for the device-injector process to finish
+wait "$device_injector_pid"

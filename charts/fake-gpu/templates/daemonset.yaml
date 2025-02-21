@@ -80,6 +80,9 @@ spec:
             mountPath: /var/run/nri
           - name: host-dev
             mountPath: /host-dev
+          - mountPath: /run/nvidia
+            mountPropagation: HostToContainer
+            name: run-nvidia
           - name: config
             mountPath: /etc/fake-gpu
           - name: config-file
@@ -92,6 +95,10 @@ spec:
       {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      - hostPath:
+          path: /run/nvidia
+          type: Directory
+        name: run-nvidia
       - name: host-dev
         hostPath:
           path: /dev
