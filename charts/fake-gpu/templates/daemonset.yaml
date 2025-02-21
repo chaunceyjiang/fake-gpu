@@ -35,7 +35,7 @@ spec:
       {{- if .Values.nri.runtime.patchConfig }}
       initContainers:
       - name: patch-runtime
-        {{- if (not (or (eq .Values.nri.runtime.config nil) (eq .Values.nri.runtime.config.pluginRegistrationTimeout ""))) }}
+        {{- if (not (or (empty .Values.nri.runtime.config) (eq .Values.nri.runtime.config.pluginRegistrationTimeout ""))) }}
         args:
           - -nri-plugin-registration-timeout
           - {{ .Values.nri.runtime.config.pluginRegistrationTimeout }}
