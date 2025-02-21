@@ -11,7 +11,11 @@ RUN apt-get update && apt-get install -y \
     cmake \
     ninja-build \
     git \
-    wget
+    wget \
+    gcc-10 \
+    g++-10
+ENV CC=gcc-10
+ENV CXX=g++-10
 RUN make build BUILD_TYPE=${BUILD_TYPE}
 
 FROM golang:1.22.5-bullseye AS gobuild
