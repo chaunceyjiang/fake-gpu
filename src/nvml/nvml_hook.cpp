@@ -1870,7 +1870,9 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetComputeInstanceId(nvmlDevi
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetMaxMigDeviceCount(nvmlDevice_t device, unsigned int *count) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetMaxMigDeviceCount");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    GPU *gpu = reinterpret_cast<GPU *>(device);
+    *count = gpu->mig.max_count;
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetMigDeviceHandleByIndex(nvmlDevice_t device, unsigned int index,

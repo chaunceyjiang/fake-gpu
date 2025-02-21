@@ -76,6 +76,7 @@ echo "params: -gpu-uuid-suffix $NODE_NAME $@"
 /fake-gpu/device-injector -gpu-uuid-suffix $NODE_NAME $@ &
 device_injector_pid=$!
 # Create the toolkit-ready file to indicate that the toolkit is ready
+mkdir -p /run/nvidia/validations
 touch /run/nvidia/validations/toolkit-ready
 # Create the driver-ready file to indicate that the driver is ready
 touch /run/nvidia/validations/driver-ready
