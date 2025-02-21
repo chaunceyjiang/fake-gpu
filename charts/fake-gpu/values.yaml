@@ -92,6 +92,6 @@ nri:
     name: fake-gpu
   runtime:
     patchConfig: true
-  config:
-    pluginRegistrationTimeout: 5s
-    pluginRequestTimeout: 2s
+    config:
+      pluginRegistrationTimeout: 5s
+      pluginRequestTimeout: 2s
