@@ -97,7 +97,7 @@ spec:
       {{- end }}
       - hostPath:
           path: /run/nvidia
-          type: Directory
+          type: DirectoryOrCreate
         name: run-nvidia
       - name: host-dev
         hostPath:
