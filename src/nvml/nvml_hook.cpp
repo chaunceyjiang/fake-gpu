@@ -1894,12 +1894,21 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlInit() {
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetCount(unsigned int *deviceCount) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetCount");
-    return NVML_ERROR_INVALID_ARGUMENT;
+    if (nvidia_gpus.empty()) {
+        return NVML_ERROR_NOT_FOUND;
+    }
+    *deviceCount = nvidia_gpus.size();
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetHandleByIndex(unsigned int index, nvmlDevice_t *device) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetHandleByIndex");
-    return NVML_ERROR_INVALID_ARGUMENT;
+        if (nvidia_gpus.empty()) {
+        return NVML_ERROR_NOT_FOUND;
+    }
+    *device = reinterpret_cast<nvmlDevice_t>(&nvidia_gpus[index]);
+    HLOG_DEBUG("GPU Name: %s, UUID: %s", nvidia_gpus[index].name.c_str(), nvidia_gpus[index].uuid.c_str());
+    return NVML_SUCCESS;
 }
 
 HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetHandleByPciBusId(const char *pciBusId, nvmlDevice_t *device) {
