@@ -49,9 +49,10 @@ struct NUMA {
 };
 struct MIG {
     bool enabled;
-
+    unsigned int max_count;
     friend void operator>>(const YAML::Node &node, MIG &mig) {
         mig.enabled = node["enabled"].as<bool>();
+        mig.max_count = 0;
     }
 };
 
