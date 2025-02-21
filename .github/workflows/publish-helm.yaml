@@ -7,6 +7,8 @@ on:
       - main
     tags:
       - v*
+env:
+  CHARTS_DIR: charts/fake-gpu
 
 jobs:
   release:
@@ -25,7 +27,7 @@ jobs:
         run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-
+          cp conf/fake-gpu.yaml $CHARTS_DIR/files/fake-gpu.yaml
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.7.0
         with:
