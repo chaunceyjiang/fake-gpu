@@ -47,7 +47,7 @@ jobs:
             mv $SRC_FILE $DEST_FILE
           done
           ./cr index --owner $REGISTRY_USER \
-            --git-repo $REGISTRY_PATH  --git-token ${{ secrets.GITHUB_TOKEN }} \
+            --git-repo $REGISTRY_PATH  --token ${{ secrets.GITHUB_TOKEN }} \
             --package-path . --release-name-template "{{ .Version }}"
       - name: Upload Stable Helm Charts to GitHub Release
         uses: softprops/action-gh-release@v1
