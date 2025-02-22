@@ -59,7 +59,6 @@ cleanup() {
     echo "device-injector stopped."
     rm -f /run/nvidia/validations/toolkit-ready
     rm -f /run/nvidia/validations/driver-ready
-    rm -rf $DEST_DIR/*
     for i in `seq 0 $gpu_num`
     do
         rm -f /host-dev/nvidia$i
