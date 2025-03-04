@@ -14,12 +14,13 @@ import (
 )
 
 var (
-	log            *logrus.Logger
-	verbose        bool
-	sourceHostPath string
-	confPath       string
-	gpusuffix      string
-	mountOption    = []string{"rbind", "ro", "rprivate"}
+	log             *logrus.Logger
+	verbose         bool
+	sourceHostPath  string
+	confPath        string
+	gpusuffix       string
+	mountOption     = []string{"rbind", "ro", "rprivate"}
+	overrideCommand = []string{}
 )
 
 type InjectGPUType int
@@ -128,12 +129,14 @@ func injectMounts(pod *api.PodSandbox, ctr *api.Container, a *api.ContainerAdjus
 				})
 			}
 		}
-		mounts = append(mounts, mount{
-			Source:      fmt.Sprintf("%s/nvidia-smi", sourceHostPath),
-			Destination: "/usr/bin/nvidia-smi",
-			Type:        "bind",
-			Options:     mountOption,
-		})
+		for _, command := range overrideCommand {
+			mounts = append(mounts, mount{
+				Source:      fmt.Sprintf("%s/nvidia-smi", sourceHostPath),
+				Destination: "/usr/bin/" + command,
+				Type:        "bind",
+				Options:     mountOption,
+			})
+		}
 		mounts = append(mounts, mount{
 			Source:      fmt.Sprintf("%s/fake-gpu.yaml", sourceHostPath),
 			Destination: "/usr/local/fake-gpu/fake-gpu.yaml",
@@ -231,6 +234,7 @@ func main() {
 	var (
 		pluginName string
 		pluginIdx  string
+		commands   string
 		opts       []stub.Option
 		err        error
 	)
@@ -246,8 +250,9 @@ func main() {
 	flag.StringVar(&sourceHostPath, "source-path", "/usr/local/fake-gpu", "source host path for mounts")
 	flag.StringVar(&gpusuffix, "gpu-uuid-suffix", "", "gpu uuid suffix for fake gpu")
 	flag.StringVar(&confPath, "conf", "", "fake gpu config file path")
+	flag.StringVar(&commands, "override-commands", "nvidia-smi,vectorAdd", "Override commands in the container")
 	flag.Parse()
-
+	overrideCommand = strings.Split(commands, ",")
 	if pluginName != "" {
 		opts = append(opts, stub.WithPluginName(pluginName))
 	}
