@@ -5,6 +5,7 @@
 The `fake-gpu` project is designed to simulate GPU information, making it easier to test scenarios where a GPU is not available. This can be particularly useful for development and testing purposes in environments that lack physical GPU hardware.
 
 ## Features
+
 - Simulate GPU information through configuration files
 - Unable to Perform Genuine CUDA Computation
 - Test GPU-related functions without GPU hardware
@@ -14,6 +15,7 @@ The `fake-gpu` project is designed to simulate GPU information, making it easier
 - Supports DCGM-Exporter
 
 ## Requirements
+
 - containerd >= 1.7.0
 
 ## Usage
@@ -23,28 +25,44 @@ To use the fake GPU, follow these steps:
 You should have a Kubernetes cluster running with containerd as the container runtime.
 You should have already deployed [nvidia-device-plugin](https://github.com/NVIDIA/k8s-device-plugin) or [HAMi](https://github.com/Project-HAMi/HAMi).
 
-### Option 1: Deploy the [nvidia-device-plugin](https://github.com/NVIDIA/k8s-device-plugin)
+### Deploy the fake GPU 
+
+1. Download the latest release of the fake GPU.
+
 ``` shell
- kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.0/deployments/static/nvidia-device-plugin.yml
+helm repo add fake-gpu-charts https://chaunceyjiang.github.io/fake-gpu
+helm repo update
 ```
-### Option 2: Deploy the [HAMi](https://github.com/Project-HAMi/HAMi)
+
+2. Deploy the fake GPU to your Kubernetes cluster.
+  
+``` shell
+helm install fake-gpu fake-gpu-charts/fake-gpu -n kube-system
+
+```
+
+You need to deploy a device plugin to advertise the fake GPU resource to the Kubernetes cluster. You can use either the NVIDIA device plugin `or` HAMi.
+
+Nvidia Device Plugin or HAMi only chooses one of them. recommends using HAMi.
+
+### Option 2: Deploy the [HAMi](https://github.com/Project-HAMi/HAMi) (Recommended)
+
 ``` shell
 helm repo add hami-charts https://project-hami.github.io/HAMi/
 helm install hami hami-charts/hami  -n kube-system
 
 ```
 
-### Deploy the fake GPU 
-1. Download the latest release of the fake GPU.
+### Option 1: Deploy the [nvidia-device-plugin](https://github.com/NVIDIA/k8s-device-plugin)
+
 ``` shell
-helm repo add fake-gpu-charts https://chaunceyjiang.github.io/fake-gpu
-helm repo update
+ kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.0/deployments/static/nvidia-device-plugin.yml
 ```
-2. Deploy the fake GPU to your Kubernetes cluster.
-``` shell
-helm install fake-gpu fake-gpu-charts/fake-gpu -n kube-system
-```
-3. Configure your application to use the GPU.
+
+### Enjoy the fake GPU
+
+Configure your application to use the GPU.
+
 ``` shell 
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
@@ -60,7 +78,9 @@ spec:
         nvidia.com/gpu: 1
 EOF
 ```
-4. Run your application as you would with a real GPU.
+
+1. Run your application as you would with a real GPU.
+
 ``` shell
 kubectl exec -it fake-gpu -- nvidia-smi
 +---------------------------------------------------------------------------------------+
