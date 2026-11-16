@@ -21,6 +21,7 @@ var ops = common.Opstion{}
 
 func init() {
 	RootCmd.AddCommand(topo.TopoCmd)
+	RootCmd.Flags().StringSliceVar(&ops.ComputeQuery, "query-compute-apps", nil, "Information about compute processes.")
 	RootCmd.Flags().StringSliceVar(&ops.Query, "query-gpu", nil, "Information about GPU.")
 	RootCmd.Flags().StringSliceVar(&ops.Format, "format", nil, `Comma separated list of format options:"
 	csv - comma separated values (MANDATORY)
@@ -221,6 +222,10 @@ var RootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 		switch {
+		case len(ops.Query) > 0 && len(ops.ComputeQuery) > 0:
+			err = fmt.Errorf("query-gpu and query-compute-apps are mutually exclusive")
+		case len(ops.ComputeQuery) > 0:
+			err = query.Compute(ops)
 		case len(ops.Query) > 0:
 			err = query.Query(ops)
 		default:

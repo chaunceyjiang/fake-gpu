@@ -28,8 +28,7 @@ jobs:
 
       - name: Build images
         run: |
-          sed -i '6,7d' Dockerfile
-          make images BUILD_TYPE=Release
+          make images BUILD_TYPE=Release IMAGE_REPOSITORY=${{ github.repository_owner }}
 
       - name: Log in to registry
         run: |

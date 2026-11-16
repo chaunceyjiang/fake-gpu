@@ -31,6 +31,10 @@ add_compile_options (
     -Wno-error=switch-default
     -Wno-switch-default
 )
+find_package(yaml-cpp QUIET)
+if(yaml-cpp_FOUND)
+  find_library(FAKE_GPU_YAML_LIBRARY NAMES libyaml-cpp.a REQUIRED)
+else()
 include(FetchContent)
 
 FetchContent_Declare(
@@ -39,6 +43,8 @@ FetchContent_Declare(
   GIT_TAG 0.8.0 
 )
 FetchContent_MakeAvailable(yaml-cpp)
+set(FAKE_GPU_YAML_LIBRARY yaml-cpp)
+endif()
 
 include_directories (
     ${PROJECT_SOURCE_DIR}/src/common
@@ -53,12 +59,12 @@ file (GLOB HOOK_SRCS
 
 # libfakegpu.so
 add_library (fakegpu SHARED ${HOOK_SRCS})
-target_link_libraries (fakegpu PRIVATE yaml-cpp -ldl)
+target_link_libraries (fakegpu PRIVATE ${FAKE_GPU_YAML_LIBRARY} -ldl)
 install (TARGETS fakegpu LIBRARY DESTINATION lib64)
 
 # libfakegpu.a
 add_library (fakegpu_static STATIC ${HOOK_SRCS})
-target_link_libraries (fakegpu_static PRIVATE yaml-cpp -ldl)
+target_link_libraries (fakegpu_static PRIVATE ${FAKE_GPU_YAML_LIBRARY} -ldl)
 set_target_properties (fakegpu_static PROPERTIES OUTPUT_NAME fakegpu)
 
 install (TARGETS fakegpu_static ARCHIVE DESTINATION lib64)

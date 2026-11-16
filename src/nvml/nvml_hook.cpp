@@ -538,7 +538,10 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetPciInfo_v3(nvmlDevice_t de
     }
     // convert nvmlDevice_t to GPU object
     GPU *gpu = reinterpret_cast<GPU *>(device);
-    gpu->pci.bus_id.copy(pci->busId, NVML_DEVICE_PCI_BUS_ID_BUFFER_SIZE);
+    if (device == nullptr || pci == nullptr) return NVML_ERROR_INVALID_ARGUMENT;
+    memset(pci, 0, sizeof(*pci));
+    gpu->pci.bus_id.copy(pci->busId, sizeof(pci->busId) - 1);
+    gpu->pci.bus_id.copy(pci->busIdLegacy, sizeof(pci->busIdLegacy) - 1);
     pci->bus = gpu->pci.bus;
     pci->domain = gpu->pci.domain_id;
     pci->device = gpu->pci.device_id;
@@ -961,20 +964,10 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetComputeRunningProcesses_v2
                                                                                  unsigned int *infoCount,
                                                                                  nvmlProcessInfo_t *infos) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetComputeRunningProcesses_v2");
-    GPU *gpu = reinterpret_cast<GPU *>(device);
-    std::ifstream procFile("/proc/1/cmdline");
-    if (!procFile.is_open()) {
-        HLOG_DEBUG("Failed to open /proc/1/cmdline");
-        return NVML_SUCCESS;
-    }
-
-    std::string cmdline;
-    std::getline(procFile, cmdline);
-    HLOG_DEBUG("Command line: %s", cmdline.c_str());
-    procFile.close();
-    infos[0].pid = 1;
-    infos[0].usedGpuMemory = gpu->memory.used;
-    *infoCount = 1;
+    // No CUDA computation is performed: do not invent a GPU process (PID 1).
+    // Follow NVML's size-query convention, including infos == nullptr.
+    if (device == nullptr || infoCount == nullptr) return NVML_ERROR_INVALID_ARGUMENT;
+    *infoCount = 0;
     return NVML_SUCCESS;
 }
 
@@ -1977,15 +1970,8 @@ HOOK_C_API HOOK_DECL_EXPORT nvmlReturn_t nvmlDeviceGetComputeRunningProcesses(nv
                                                                               unsigned int *infoCount,
                                                                               nvmlProcessInfo_v1_t *infos) {
     HOOK_TRACE_PROFILE("nvmlDeviceGetComputeRunningProcesses");
-    GPU *gpu = reinterpret_cast<GPU *>(device);
-    std::ifstream procFile("/proc/1/cmdline");
-    if (!procFile.is_open()) {
-        HLOG_DEBUG("Failed to open /proc/1/cmdline");
-        return NVML_SUCCESS;
-    }
-    procFile.close();
-    infos[0].pid = 1;
-    infos[0].usedGpuMemory = gpu->memory.used;
+    if (device == nullptr || infoCount == nullptr) return NVML_ERROR_INVALID_ARGUMENT;
+    *infoCount = 0;
     return NVML_SUCCESS;
 }
 

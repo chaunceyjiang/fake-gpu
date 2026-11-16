@@ -1,90 +1,216 @@
 package query
 
 import (
-	"errors"
+	"encoding/csv"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/NVIDIA/go-nvml/pkg/nvml"
-
 	"github.com/chaunceyjiang/fake-gpu/pkg/nvidia/common"
 )
 
-func Query(ops common.Opstion) error {
-	if ops.Format == nil {
-		return errors.New(`"--format=" switch is missing. Please run 'nvidia-smi -h' for help`)
-	}
-	noheader := false
-	for _, format := range ops.Format {
-		if format == "noheader" {
+func formats(options []string) (bool, bool, error) {
+	csvFormat, noheader, nounits := false, false, false
+	for _, option := range options {
+		switch option {
+		case "csv":
+			csvFormat = true
+		case "noheader":
 			noheader = true
-			break
+		case "nounits":
+			nounits = true
+		default:
+			return false, false, fmt.Errorf("unsupported format %q", option)
 		}
 	}
-	nvml.Init()
-	defer nvml.Shutdown()
-	var gpus []common.GPU
+	if !csvFormat {
+		return false, false, fmt.Errorf("--format must include csv")
+	}
+	return noheader, nounits, nil
+}
+
+func memory(value uint64, nounits bool) string {
+	if nounits {
+		return fmt.Sprint(value / 1024 / 1024)
+	}
+	return fmt.Sprintf("%d MiB", value/1024/1024)
+}
+
+func gpuValue(gpu common.GPU, field string, nounits bool) (string, error) {
+	switch field {
+	case "index":
+		return fmt.Sprint(gpu.Idx), nil
+	case "uuid":
+		return gpu.UUID, nil
+	case "name":
+		return gpu.Name, nil
+	case "memory.total":
+		return memory(gpu.TotalMem, nounits), nil
+	case "memory.used":
+		return memory(gpu.UsedMem, nounits), nil
+	case "memory.free":
+		return memory(gpu.TotalMem-gpu.UsedMem, nounits), nil
+	case "driver_version":
+		return gpu.DriverVersion, nil
+	case "pci.bus_id":
+		return gpu.BusID, nil
+	case "utilization.gpu":
+		if nounits {
+			return fmt.Sprint(gpu.Util), nil
+		}
+		return fmt.Sprintf("%d %%", gpu.Util), nil
+	default:
+		return "", fmt.Errorf("unsupported GPU query field %q", field)
+	}
+}
+
+func rows(out io.Writer, fields []string, data [][]string, noheader bool) error {
+	writer := csv.NewWriter(out)
+	if !noheader {
+		if err := writer.Write(fields); err != nil {
+			return err
+		}
+	}
+	for _, row := range data {
+		if err := writer.Write(row); err != nil {
+			return err
+		}
+	}
+	writer.Flush()
+	return writer.Error()
+}
+
+func initNVML() (int, error) {
+	if ret := nvml.Init(); ret != nvml.SUCCESS {
+		return 0, fmt.Errorf("NVML initialization: %s", nvml.ErrorString(ret))
+	}
 	count, ret := nvml.DeviceGetCount()
 	if ret != nvml.SUCCESS {
-		return errors.New("failed to get device count")
+		nvml.Shutdown()
+		return 0, fmt.Errorf("device count: %s", nvml.ErrorString(ret))
 	}
-	driverVersion, ret := nvml.SystemGetDriverVersion()
+	return count, nil
+}
+
+func Query(ops common.Opstion) error {
+	noheader, nounits, err := formats(ops.Format)
+	if err != nil {
+		return err
+	}
+	// Reject unsupported columns before producing partial rows.
+	for _, field := range ops.Query {
+		if _, err := gpuValue(common.GPU{}, field, nounits); err != nil {
+			return err
+		}
+	}
+	count, err := initNVML()
+	if err != nil {
+		return err
+	}
+	defer nvml.Shutdown()
+	driver, ret := nvml.SystemGetDriverVersion()
 	if ret != nvml.SUCCESS {
-		return errors.New("failed to get driver version")
+		return fmt.Errorf("driver version: %s", nvml.ErrorString(ret))
 	}
+	data := [][]string{}
 	for i := 0; i < count; i++ {
-		gpu := common.GPU{}
-		gpu.DriverVersion = driverVersion
 		device, ret := nvml.DeviceGetHandleByIndex(i)
 		if ret != nvml.SUCCESS {
-			return errors.New("failed to get device handle")
+			return fmt.Errorf("device handle: %s", nvml.ErrorString(ret))
 		}
-		gpu.Idx = int(i)
+		gpu := common.GPU{Idx: i, DriverVersion: driver}
+		gpu.UUID, ret = device.GetUUID()
+		if ret != nvml.SUCCESS {
+			return fmt.Errorf("device UUID: %s", nvml.ErrorString(ret))
+		}
+		gpu.Name, ret = device.GetName()
+		if ret != nvml.SUCCESS {
+			return fmt.Errorf("device name: %s", nvml.ErrorString(ret))
+		}
+		info, ret := device.GetMemoryInfo_v2()
+		if ret != nvml.SUCCESS {
+			return fmt.Errorf("device memory: %s", nvml.ErrorString(ret))
+		}
+		gpu.TotalMem, gpu.UsedMem = info.Total, info.Used
+		pci, ret := device.GetPciInfo()
+		if ret != nvml.SUCCESS {
+			return fmt.Errorf("device PCI: %s", nvml.ErrorString(ret))
+		}
+		var bus strings.Builder
+		for _, b := range pci.BusId {
+			if b == 0 {
+				break
+			}
+			bus.WriteByte(byte(b))
+		}
+		gpu.BusID = bus.String()
+		util, ret := device.GetUtilizationRates()
+		if ret != nvml.SUCCESS {
+			return fmt.Errorf("device utilization: %s", nvml.ErrorString(ret))
+		}
+		gpu.Util = util.Gpu
+		row := []string{}
+		for _, field := range ops.Query {
+			value, _ := gpuValue(gpu, field, nounits)
+			row = append(row, value)
+		}
+		data = append(data, row)
+	}
+	return rows(os.Stdout, ops.Query, data, noheader)
+}
+
+func processValue(process common.Process, uuid, field string, nounits bool) (string, error) {
+	switch field {
+	case "pid":
+		return fmt.Sprint(process.PID), nil
+	case "gpu_uuid":
+		return uuid, nil
+	case "used_memory", "used_gpu_memory":
+		return memory(process.UsedMem, nounits), nil
+	default:
+		return "", fmt.Errorf("unsupported compute query field %q", field)
+	}
+}
+
+func Compute(ops common.Opstion) error {
+	noheader, nounits, err := formats(ops.Format)
+	if err != nil {
+		return err
+	}
+	for _, field := range ops.ComputeQuery {
+		if _, err := processValue(common.Process{}, "", field, nounits); err != nil {
+			return err
+		}
+	}
+	count, err := initNVML()
+	if err != nil {
+		return err
+	}
+	defer nvml.Shutdown()
+	data := [][]string{}
+	for i := 0; i < count; i++ {
+		device, ret := nvml.DeviceGetHandleByIndex(i)
+		if ret != nvml.SUCCESS {
+			return fmt.Errorf("device handle: %s", nvml.ErrorString(ret))
+		}
 		uuid, ret := device.GetUUID()
 		if ret != nvml.SUCCESS {
-			return errors.New("failed to get device UUID")
+			return fmt.Errorf("device UUID: %s", nvml.ErrorString(ret))
 		}
-		gpu.UUID = uuid
-		name, ret := device.GetName()
+		processes, ret := device.GetComputeRunningProcesses()
 		if ret != nvml.SUCCESS {
-			return errors.New("failed to get device name")
+			return fmt.Errorf("compute processes: %s", nvml.ErrorString(ret))
 		}
-		gpu.Name = name
-		mem, ret := device.GetMemoryInfo_v2()
-		if ret != nvml.SUCCESS {
-			return errors.New("failed to get device memory info")
-		}
-		gpu.TotalMem = mem.Total
-		gpu.UsedMem = mem.Used
-		gpus = append(gpus, gpu)
-	}
-	if !noheader {
-		fmt.Println(strings.Join(ops.Query, ", "))
-	}
-	result := make([][]string, len(gpus))
-
-	for i, gpu := range gpus {
-		result[i] = make([]string, 0)
-		for _, query := range ops.Query {
-			switch query {
-			case "index":
-				result[i] = append(result[i], fmt.Sprintf("%d", gpu.Idx))
-			case "uuid":
-				result[i] = append(result[i], gpu.UUID)
-			case "name":
-				result[i] = append(result[i], gpu.Name)
-			case "memory.total":
-				result[i] = append(result[i], fmt.Sprintf("%d MiB", gpu.TotalMem/1024/1024))
-			case "memory.used":
-				result[i] = append(result[i], fmt.Sprintf("%d MiB", gpu.UsedMem/1024/1024))
-			case "driver_version":
-				result[i] = append(result[i], gpu.DriverVersion)
+		for _, process := range processes {
+			row := []string{}
+			for _, field := range ops.ComputeQuery {
+				value, _ := processValue(common.Process{PID: process.Pid, UsedMem: process.UsedGpuMemory}, uuid, field, nounits)
+				row = append(row, value)
 			}
+			data = append(data, row)
 		}
 	}
-	// csv output
-	for _, r := range result {
-		fmt.Println(strings.Join(r, ", "))
-	}
-	return nil
+	return rows(os.Stdout, ops.ComputeQuery, data, noheader)
 }

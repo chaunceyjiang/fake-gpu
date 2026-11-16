@@ -57,6 +57,9 @@ spec:
       containers:
         - name: {{ .Chart.Name }}
           env:
+          {{- if .Values.hostIntegration.enabled }}
+          - {name: FAKE_GPU_INSTALL_HOST, value: "true"}
+          {{- end }}
           - name: NODE_NAME
             valueFrom:
               fieldRef:
@@ -76,6 +79,9 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
+          {{- if .Values.hostIntegration.enabled }}
+          - {name: host-bin, mountPath: /host-bin}
+          {{- end }}
           - name: nrisockets
             mountPath: /var/run/nri
           - name: host-dev
@@ -94,6 +100,10 @@ spec:
       volumes:
       {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.hostIntegration.enabled }}
+      - name: host-bin
+        hostPath: {path: /usr/local/bin, type: DirectoryOrCreate}
       {{- end }}
       - hostPath:
           path: /run/nvidia

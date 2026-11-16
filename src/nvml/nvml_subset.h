@@ -68,24 +68,13 @@ typedef enum nvmlReturn_enum {
  * PCI information about a GPU device.
  */
 typedef struct nvmlPciInfo_st {
-    char busId[NVML_DEVICE_PCI_BUS_ID_BUFFER_SIZE];  //!< The tuple
-    //!< domain:bus:device.function
-    //!< PCI identifier (&amp;
-    //!< NULL terminator)
-    unsigned int domain;  //!< The PCI domain on which the device's bus resides, 0
-    //!< to 0xffff
-    unsigned int bus;          //!< The bus on which the device resides, 0 to 0xff
-    unsigned int device;       //!< The device's id on the bus, 0 to 31
-    unsigned int pciDeviceId;  //!< The combined 16-bit device id and 16-bit vendor id
-
-    // Added in NVML 2.285 API
-    unsigned int pciSubSystemId;  //!< The 32-bit Sub System Device ID
-
-    // NVIDIA reserved for internal use only
-    unsigned int reserved0;
-    unsigned int reserved1;
-    unsigned int reserved2;
-    unsigned int reserved3;
+    char busIdLegacy[16];
+    unsigned int domain;
+    unsigned int bus;
+    unsigned int device;
+    unsigned int pciDeviceId;
+    unsigned int pciSubSystemId;
+    char busId[32];
 } nvmlPciInfo_t;
 
 /**

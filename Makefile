@@ -57,7 +57,7 @@ default: all version
 .PHONY: docker-build
 docker-build:
 	docker build --build-arg BUILD_TYPE=$(BUILD_TYPE) -t $(IMAGE_REPOSITORY)/$(IMAGE_NAME):$(IMAGE_VERSION) -f Dockerfile .
-build-cmd: device-injector nvidia-smi
+build-cmd: device-injector nvidia-smi prepare-config
 
 device-injector:
 	$(GO) build -o ${OUTPUT_DIR}/bin/device-injector ./cmd/device-injector/main.go
@@ -70,4 +70,6 @@ images: docker-build
 	@mkdir -p $(OUTPUT_DIR)
 	@docker tag $(IMAGE_REPOSITORY)/$(IMAGE_NAME):$(IMAGE_VERSION) $(IMAGE_REPOSITORY)/$(IMAGE_NAME):latest
 	@docker save -o $(OUTPUT_DIR)/fake-gpu.tar $(IMAGE_REPOSITORY)/$(IMAGE_NAME):latest
-	
+
+prepare-config:
+	$(GO) build -o ${OUTPUT_DIR}/bin/prepare-config ./cmd/prepare-config

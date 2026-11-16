@@ -95,3 +95,10 @@ nri:
     config:
       pluginRegistrationTimeout: 5s
       pluginRequestTimeout: 2s
+
+# Optional complete fake GPU YAML. Empty uses the bundled default configuration.
+gpuConfig: ""
+# Install a node-local nvidia-smi wrapper for agents that enter the host mount
+# namespace. Use dedicated CPU test nodes; never enable on real GPU hosts.
+hostIntegration:
+  enabled: false
