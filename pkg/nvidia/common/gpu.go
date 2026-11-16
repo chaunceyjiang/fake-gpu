@@ -25,6 +25,7 @@ type Process struct {
 }
 
 type Opstion struct {
-	Query  []string
-	Format []string
+	Query        []string
+	ComputeQuery []string
+	Format       []string
 }

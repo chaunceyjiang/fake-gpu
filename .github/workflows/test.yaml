@@ -1,0 +1,16 @@
+name: CPU compatibility tests
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  cpu:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: azure/setup-helm@v4.0.0
+    - run: helm lint charts/fake-gpu
+    - run: sh -n entrypoint.sh
+    - run: docker build -t fake-gpu:test .
+    - run: python3 tests/cli_smoke.py fake-gpu:test

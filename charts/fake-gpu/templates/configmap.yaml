@@ -4,4 +4,4 @@ metadata:
   name: {{ .Release.Name }}-configmap
 data:
   fake-gpu.yaml: |-
-  {{ .Files.Get "files/fake-gpu.yaml" | indent 4 }}
+{{ (.Values.gpuConfig | default (.Files.Get "default-config.yaml")) | indent 4 }}

@@ -14,6 +14,8 @@ The `fake-gpu` project is designed to simulate GPU information, making it easier
 - Supports nvidia-smi
 - Supports DCGM-Exporter
 
+For real CPU Kubernetes nodes and host agents, see [CPU node integration](docs/cpu-kubernetes-nodes.md).
+
 ## Requirements
 
 - containerd >= 1.7.0

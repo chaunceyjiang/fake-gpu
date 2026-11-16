@@ -13,6 +13,7 @@ struct PCI {
     int sub_system_id;
     friend void operator>>(const YAML::Node &node, PCI &pci) {
         pci.bus_id = node["bus_id"].as<std::string>();
+        pci.bus = node["bus"].as<int>();
         pci.device_id = node["device_id"].as<int>();
         pci.domain_id = node["domain_id"].as<int>();
         pci.sub_system_id = node["sub_system_id"].as<int>();
